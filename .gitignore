@@ -1,2 +1,4 @@
+training/
+tensorboard/
 .ipynb_checkpoints/
 *.pyc
