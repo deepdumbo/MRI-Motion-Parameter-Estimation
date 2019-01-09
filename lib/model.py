@@ -35,7 +35,7 @@ checkpoint_path = checkpoint_dir+checkpoint_name
 if not os.path.exists(checkpoint_dir):
     os.makedirs(checkpoint_dir)
 cp_callback = keras.callbacks.ModelCheckpoint(
-        checkpoint_path, verbose=1, period=1)
+        checkpoint_path, verbose=1, period=5)
 
 # Tensorboard
 tb_dir = os.path.join(dir_path,'../tensorboard/')
@@ -61,7 +61,7 @@ model.compile(optimizer=keras.optimizers.RMSprop(lr=0.00002,rho=0.9),
         loss='mean_squared_error',
         metrics=[keras.metrics.mae])
 
-model.fit(train_k, train_images, epochs=5, batch_size=100, callbacks=[cp_callback,tb_callback])
+model.fit(train_k, train_images, epochs=200, batch_size=100, callbacks=[cp_callback,tb_callback])
 
 test_loss, test_acc =  model.evaluate(test_k,test_images)
 print('Test accuracy: ', test_acc)
