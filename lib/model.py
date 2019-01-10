@@ -1,32 +1,15 @@
 import tensorflow as tf
 from tensorflow import keras
 
+import data_generator
+
 import numpy as np
 import matplotlib.pyplot as plt
 
 import os
+
 dir_path = os.path.dirname(os.path.realpath(__file__))
-
-# Import data
-fashion_mnist = keras.datasets.fashion_mnist
-(train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
-
-train_images = train_images/255.0
-test_images = test_images/255.0
-
-# Generate k-space network input
-def get_fft(img_array):
-    img_fft = np.fft.fft2(img_array)
-    img_fft_re = np.real(img_fft)
-    img_fft_im = np.imag(img_fft)
-    return np.stack([img_fft_re,img_fft_im],axis=-1)
-
-train_k = get_fft(train_images)
-test_k = get_fft(test_images)
-
-# Format raw images for comparison
-train_images = np.expand_dims(train_images,-1)
-test_images = np.expand_dims(test_images,-1)
+data_path = '/data/vision/polina/scratch/nmsingh/imagenet-data'
 
 # Checkpointing
 checkpoint_dir = os.path.join(dir_path,'../training/')
@@ -61,7 +44,9 @@ model.compile(optimizer=keras.optimizers.RMSprop(lr=0.00002,rho=0.9),
         loss='mean_squared_error',
         metrics=[keras.metrics.mae])
 
-model.fit(train_k, train_images, epochs=200, batch_size=100, callbacks=[cp_callback,tb_callback])
+# Load data
+data_path = '/data/vision/polina/scratch/nmsingh/imagenet-data'
+generator = data_generator.DataSequence(data_path, 100, n)
 
-test_loss, test_acc =  model.evaluate(test_k,test_images)
-print('Test accuracy: ', test_acc)
+# Train model
+model.fit_generator(generator, epochs=200, callbacks=[cp_callback,tb_callback])
