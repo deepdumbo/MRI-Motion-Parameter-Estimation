@@ -1,4 +1,5 @@
 from tensorflow import keras
+from imgaug import augmenters as iaa
 
 import numpy as np
 from PIL import Image
@@ -28,6 +29,11 @@ def batch_imgs(batch_paths,n):
         if(np.min(img_array.shape[0:2])>=n):
             yield img_array
 
+def augment(batch_imgs):
+    affine = iaa.Affine(rotate=[0,90,180,270])
+    aug_imgs = affine.augment_images(batch_imgs)
+    return aug_imgs
+
 def get_fft(img_array):
     img_fft = np.fft.fft2(img_array)
     img_fft_re = np.real(img_fft)
@@ -46,6 +52,7 @@ class DataSequence(keras.utils.Sequence):
     def __getitem__(self, idx):
         batch_paths = self.img_paths[idx * self.batch_size:(idx+1) * self.batch_size]
         batch_y = np.stack(list(batch_imgs(batch_paths,self.n)), axis=0)
-        batch_x = get_fft(batch_y)
+        aug_batch_y = augment(batch_y)
+        aug_batch_x = get_fft(aug_batch_y)
 
-        return batch_x, batch_y
+        return aug_batch_x, aug_batch_y
