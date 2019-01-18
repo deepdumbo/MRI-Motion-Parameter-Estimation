@@ -2,6 +2,7 @@ from tensorflow import keras
 from imgaug import augmenters as iaa
 
 import numpy as np
+from scipy import misc
 from PIL import Image
 
 import os
@@ -15,19 +16,24 @@ def list_imgs(data_path):
 
 def get_img(img_path,n):
     img = Image.open(img_path).convert('YCbCr')
-    img_array = np.expand_dims(np.array(img)[:,:,0],-1)
 
+    # Resize smallest dimension to n
+    small_dim = np.argmin(img.size)
+    resize = n/float(img.size[small_dim])
+    new_shape = tuple(int(np.ceil(i*resize)) for i in img.size)
+    img_array = np.array(img.resize(new_shape))[:,:,0]
+    img_array = np.expand_dims(img_array,-1)
+
+    # Choose central nxn square
     x = int((img_array.shape[0]-n)/2.0)
     y = int((img_array.shape[1]-n)/2.0)
-
     img_array = img_array[x:x+n,y:y+n]
     return img_array
 
 def batch_imgs(batch_paths,n):
     for img_path in batch_paths:
         img_array = get_img(img_path,n)
-        if(np.min(img_array.shape[0:2])>=n):
-            yield img_array
+        yield img_array
 
 def augment(batch_imgs):
     affine = iaa.Affine(rotate=[0,90,180,270])
