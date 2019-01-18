@@ -1,3 +1,4 @@
+import argparse
 import os
 import subprocess
 
@@ -5,7 +6,11 @@ import numpy as np
 from scipy import misc
 from PIL import Image
 
-n = 128
+parser = argparse.ArgumentParser(description='Resample and center-crop images, and normalize images across a dataset.')
+parser.add_argument('n',type=int,help ='Dimension, in pixels, to which to crop images.')
+args = parser.parse_args()
+
+n = args.n
 
 data_path = '/data/vision/polina/scratch/nmsingh/imagenet-data'
 preprocess_path = '/data/vision/polina/scratch/nmsingh/imagenet-data-preprocessed-'+str(n)
