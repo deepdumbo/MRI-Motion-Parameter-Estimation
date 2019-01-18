@@ -35,9 +35,9 @@ cp_callback = keras.callbacks.ModelCheckpoint(
         checkpoint_path, verbose=1, period=5)
 
 # Tensorboard
-tb_dir = os.path.join(dir_path,'../tensorboard/',job_name)
+tb_dir = os.path.join(checkpoint_dir,'tensorboard/',job_name)
 if os.path.exists(tb_dir):
-    raise ValueError('Job name has already been used.')
+    raise ValueError('Tensorboard logs have already been created under this name.')
 else:
     os.makedirs(tb_dir)
 tb_callback = keras.callbacks.TensorBoard(
