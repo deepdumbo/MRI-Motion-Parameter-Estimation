@@ -14,25 +14,10 @@ def list_imgs(data_path):
             imgs.append(os.path.join(path, name))
     return imgs
 
-def get_img(img_path,n):
-    img = Image.open(img_path).convert('YCbCr')
-
-    # Resize smallest dimension to n
-    small_dim = np.argmin(img.size)
-    resize = n/float(img.size[small_dim])
-    new_shape = tuple(int(np.ceil(i*resize)) for i in img.size)
-    img_array = np.array(img.resize(new_shape))[:,:,0]
-    img_array = np.expand_dims(img_array,-1)
-
-    # Choose central nxn square
-    x = int((img_array.shape[0]-n)/2.0)
-    y = int((img_array.shape[1]-n)/2.0)
-    img_array = img_array[x:x+n,y:y+n]
-    return img_array
-
 def batch_imgs(batch_paths,n):
     for img_path in batch_paths:
-        img_array = get_img(img_path,n)
+        img = Image.open(img_path).convert('L')
+        img_array = np.expand_dims(np.array(img),-1)
         yield img_array
 
 def augment(batch_imgs):

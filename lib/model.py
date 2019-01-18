@@ -21,7 +21,7 @@ if job_name is None:
 
 # Get current and data directories
 dir_path = os.path.dirname(os.path.realpath(__file__))
-data_path = '/data/vision/polina/scratch/nmsingh/imagenet-data'
+data_path = '/data/vision/polina/scratch/nmsingh/imagenet-data-preprocessed-28'
 
 # Checkpointing
 checkpoint_dir = os.path.join(dir_path,'../training/',job_name)
@@ -65,7 +65,6 @@ with open(os.path.join(checkpoint_dir,'summary.txt'),'w') as fh:
     model.summary(print_fn=lambda x: fh.write(x+'\n'))
 
 # Load data
-data_path = '/data/vision/polina/scratch/nmsingh/imagenet-data'
 generator = data_generator.DataSequence(data_path, 100, n)
 
 # Train model
