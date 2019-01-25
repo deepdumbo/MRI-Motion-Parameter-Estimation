@@ -13,10 +13,14 @@ args = parser.parse_args()
 n = args.n
 
 data_path = '/data/vision/polina/scratch/nmsingh/imagenet-data'
+test_data_path = os.path.join(data_path,'test')
+train_data_path = os.path.join(data_path,'train')
 preprocess_path = '/data/vision/polina/scratch/nmsingh/imagenet-data-preprocessed-'+str(n)
+test_preprocess_path = os.path.join(preprocess_path,'test')
+train_preprocess_path = os.path.join(preprocess_path, 'train')
 
-def crop_img(category,synset,i,n):
-    img_path = os.path.join(data_path,category,synset,i)
+def crop_img(dataset,category,synset,i,n):
+    img_path = os.path.join(data_path,dataset,category,synset,i)
     img = Image.open(img_path).convert('YCbCr')
 
     # Resize smallest dimension to n
@@ -31,7 +35,7 @@ def crop_img(category,synset,i,n):
     cropped_img_array = img_array[x:x+n,y:y+n]
 
     # Save cropped image
-    new_img_dir = os.path.join(preprocess_path,category,synset)
+    new_img_dir = os.path.join(preprocess_path,dataset,category,synset)
     if(not os.path.exists(new_img_dir)):
         os.makedirs(new_img_dir)
     cropped_img = Image.fromarray(cropped_img_array)
@@ -47,19 +51,34 @@ if(os.path.exists(preprocess_path)):
         sys.exit()
 # Otherwise, create it
 else:
-    os.makedirs(preprocess_path)
+    os.makedirs(train_preprocess_path)
+    os.makedirs(test_preprocess_path)
 
-# Crop images and compute the global max intensity
-global_max = -float('inf')
-print('Cropping Images')
+# Crop images
+print('Cropping Train Images')
 print('---------------')
-for category in os.listdir(data_path):
+for category in os.listdir(train_data_path):
     print('Category: ' + category)
-    category_path = os.path.join(data_path,category)
+    category_path = os.path.join(train_data_path,category)
 
     for synset in os.listdir(category_path):
         print('-Synset: ' + synset)
         synset_path = os.path.join(category_path,synset)
 
         for i in os.listdir(synset_path):
-            img_max = crop_img(category,synset,i,n)
+            crop_img('train',category,synset,i,n)
+
+print('Cropping Test Images')
+print('---------------')
+for category in os.listdir(test_data_path):
+    print('Category: ' + category)
+    category_path = os.path.join(test_data_path,category)
+
+    for synset in os.listdir(category_path):
+        print('-Synset: ' + synset)
+        synset_path = os.path.join(category_path,synset)
+
+        for i in os.listdir(synset_path):
+            crop_img('test',category,synset,i,n)
+
+

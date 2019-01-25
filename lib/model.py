@@ -23,7 +23,7 @@ if job_name is None:
 
 # Get current and data directories
 dir_path = os.path.dirname(os.path.realpath(__file__))
-data_path = '/data/vision/polina/scratch/nmsingh/imagenet-data-preprocessed-'+str(n)
+data_path = '/data/vision/polina/scratch/nmsingh/imagenet-data-preprocessed-'+str(n)+'/train'
 
 # Checkpointing
 checkpoint_dir = os.path.join(dir_path,'../training/',job_name)
