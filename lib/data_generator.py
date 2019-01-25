@@ -18,6 +18,8 @@ def batch_imgs(batch_paths,n):
     for img_path in batch_paths:
         img = Image.open(img_path).convert('L')
         img_array = np.expand_dims(np.array(img),-1)
+        img_array = img_array-img_array.mean()
+        img_array = img_array/255.
         yield img_array
 
 def augment(batch_imgs):

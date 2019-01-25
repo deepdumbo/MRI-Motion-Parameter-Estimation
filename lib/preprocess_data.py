@@ -37,20 +37,6 @@ def crop_img(category,synset,i,n):
     cropped_img = Image.fromarray(cropped_img_array)
     cropped_img.save(os.path.join(new_img_dir,i))
 
-    # Return max
-    img_max = np.max(img_array)
-    return img_max
-
-def normalize_img(category,synset,i):
-    img_path = os.path.join(preprocess_path,category,synset,i)
-    img_array = np.array(Image.open(img_path).convert('L'))
-    
-    img_array = img_array - float(np.mean(img_array))
-    img_array = img_array/(global_max/2.0)
-
-    normalized_img = Image.fromarray(img_array).convert('L')
-    normalized_img.save(img_path)
-
 # If the preprocessed data path already exists, make sure the user wants to overwrite it
 answer = ''
 if(os.path.exists(preprocess_path)):
@@ -77,20 +63,3 @@ for category in os.listdir(data_path):
 
         for i in os.listdir(synset_path):
             img_max = crop_img(category,synset,i,n)
-            if(img_max > global_max):
-                global_max = img_max
-
-# Renormalize images
-print('====================')
-print('Renormalizing Images')
-print('--------------------')
-for category in os.listdir(data_path):
-    print('Category: ' + category)
-    category_path = os.path.join(data_path,category)
-
-    for synset in os.listdir(category_path):
-        print('Synset: ' + synset)
-        synset_path = os.path.join(category_path,synset)
-
-        for i in os.listdir(synset_path):
-            normalize_img(category,synset,i)
