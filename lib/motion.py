@@ -8,14 +8,17 @@ import scipy.signal as signal
 import numpy as np
 
 # Induce horizontal translation, within a slice
-def add_horiz_translation(sl,num_pix,k_line):
+def add_horiz_translation(sl,num_pix,k_line,return_k=False):
     sl_slide = ndimage.interpolation.shift(sl,[0,num_pix])
     sl_k = np.fft.fft2(sl)
     sl_k_slide = np.fft.fft2(sl_slide)
     sl_k_combined = sl_k
     sl_k_combined[:,:k_line] = sl_k_slide[:,:k_line]
     sl_motion = np.fft.ifft2(sl_k_combined)
-    return sl_slide, sl_motion
+    if(return_k):
+        return sl_slide, sl_motion, sl_k_combined
+    else:
+        return sl_slide, sl_motion
 
 def plot_horiz_trans(img):
     fig,axes = plt.subplots( 4,4, figsize=[12,12] )

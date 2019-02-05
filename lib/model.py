@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
-
 import data_generator
+import corrupted_data_generator
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -24,6 +24,7 @@ if job_name is None:
 # Get current and data directories
 dir_path = os.path.dirname(os.path.realpath(__file__))
 data_path = '/data/vision/polina/scratch/nmsingh/imagenet-data-preprocessed-'+str(n)+'/train'
+adni_dir = '/data/ddmg/voxelmorph/data/t1_mix/proc/old/resize256-crop_0/train/vols'
 
 # Checkpointing
 checkpoint_dir = os.path.join(dir_path,'../training/',job_name)
@@ -66,7 +67,8 @@ with open(os.path.join(checkpoint_dir,'summary.txt'),'w') as fh:
     model.summary(print_fn=lambda x: fh.write(x+'\n'))
 
 # Load data
-generator = data_generator.DataSequence(data_path, 100, n)
+#generator = data_generator.DataSequence(data_path, 100, n)
+motion_generator = corrupted_data_generator.DataSequence(adni_dir, 100, n, 3, 15)
 
 # Train model
-model.fit_generator(generator, epochs=200, callbacks=[cp_callback,tb_callback])
+model.fit_generator(motion_generator, epochs=200, callbacks=[cp_callback,tb_callback])
