@@ -10,27 +10,40 @@ import os
 import motion
 
 def batch_corrupted_imgs(dir_name,image_names,n,num_pix,k_line):
+    batch_imgs = []
+    batch_ks = []
+    i=0
     for img in image_names:
         vol_data = np.load(os.path.join(dir_name,img))['vol_data']
         _,_,z = vol_data.shape
-        
+
         img_data = vol_data[:,:,int(z/2)]
         img_data = np.array(Image.fromarray(img_data).resize((n,n)))
         img_data = img_data-img_data.mean()
         img_data = img_data/np.max(img_data)
 
         _,corrupted_img,corrupted_k = motion.add_horiz_translation(img_data,num_pix,k_line,return_k=True)
-        
+
         corrupted_k = np.expand_dims(corrupted_k,-1)
         corrupted_k_re = np.real(corrupted_k)
         corrupted_k_im = np.imag(corrupted_k)
         corrupted_k = np.concatenate([corrupted_k_re,corrupted_k_im], axis=2)
-        yield (np.expand_dims(img_data,-1),corrupted_k)
+        batch_imgs.append(np.expand_dims(corrupted_img,axis=-1))
+        batch_ks.append(corrupted_k)
+        
+        i+=1
+    
+    #print(time.time())
+    #print('Made it through for loop')
+    batch_imgs = np.stack(batch_imgs)
+    batch_ks = np.stack(batch_ks)
+    return(batch_imgs,batch_ks)
 
 class DataSequence(keras.utils.Sequence):
     def __init__(self, data_path, batch_size, n, num_pix, k_line):
         self.dir_name = data_path
         self.img_names = os.listdir(data_path)
+        self.batch_y, self.batch_x = batch_corrupted_imgs(self.dir_name,self.img_names,n,num_pix,k_line)
         self.batch_size = batch_size
         self.n = n
         self.num_pix = num_pix
@@ -40,8 +53,6 @@ class DataSequence(keras.utils.Sequence):
         return int(np.ceil(len(self.img_names)/float(self.batch_size)))
 
     def __getitem__(self, idx):
-        batch_paths = self.img_names[idx * self.batch_size:(idx+1) * self.batch_size]
-        batch_list = list(batch_corrupted_imgs(self.dir_name,batch_paths,self.n,self.num_pix,self.k_line))
-        batch_y = np.array([x[0] for x in batch_list])
-        batch_x = np.array([x[1] for x in batch_list])
+        batch_y = self.batch_y[idx*self.batch_size:(idx+1)*self.batch_size,:,:,:]
+        batch_x = self.batch_x[idx*self.batch_size:(idx+1)*self.batch_size,:,:,:]
         return batch_x, batch_y
