@@ -28,13 +28,11 @@ def batch_corrupted_imgs(dir_name,image_names,n,num_pix,k_line):
         corrupted_k_re = np.real(corrupted_k)
         corrupted_k_im = np.imag(corrupted_k)
         corrupted_k = np.concatenate([corrupted_k_re,corrupted_k_im], axis=2)
-        batch_imgs.append(np.expand_dims(corrupted_img,axis=-1))
+        batch_imgs.append(np.expand_dims(img_data,axis=-1))
         batch_ks.append(corrupted_k)
         
         i+=1
     
-    #print(time.time())
-    #print('Made it through for loop')
     batch_imgs = np.stack(batch_imgs)
     batch_ks = np.stack(batch_ks)
     return(batch_imgs,batch_ks)
