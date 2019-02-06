@@ -13,7 +13,9 @@ import datetime
 parser = argparse.ArgumentParser(description='Train a model to reconstruct images from k-space data.')
 parser.add_argument('n',type=int,help ='Dimension, in pixels, to which to crop images.')
 parser.add_argument('--name',help='Name of directories containing checkpoints/tensorboard logs.')
+parser.add_argument('--pretrain',type=bool,default=False,help='Boolean indicating whether to pretrain the network with weights learned from images without motion corruption')
 args = parser.parse_args()
+pretrain = args.pretrain
 job_name = args.name
 n = args.n
 
@@ -66,9 +68,18 @@ model.compile(optimizer=keras.optimizers.RMSprop(lr=0.00002,rho=0.9),
 with open(os.path.join(checkpoint_dir,'summary.txt'),'w') as fh:
     model.summary(print_fn=lambda x: fh.write(x+'\n'))
 
+# Pretrain, if specified,
+if(pretrain):
+    print('Loading pretrained weights')
+    model.load_weights('../training/automap64/cp-0200.ckpt')
+
 # Load data
 #generator = data_generator.DataSequence(data_path, 100, n)
 motion_generator = corrupted_data_generator.DataSequence(adni_dir, 100, n, 3, 15)
 
 # Train model
-model.fit_generator(motion_generator, epochs=200, callbacks=[cp_callback,tb_callback])
+if(pretrain):
+    num_epochs = 50
+else:
+    num_epochs = 200
+model.fit_generator(motion_generator, epochs=num_epochs, callbacks=[cp_callback,tb_callback])
