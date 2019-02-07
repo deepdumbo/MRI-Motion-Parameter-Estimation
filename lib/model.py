@@ -78,8 +78,5 @@ if(pretrain):
 motion_generator = corrupted_data_generator.DataSequence(adni_dir, 100, n, 3, 15)
 
 # Train model
-if(pretrain):
-    num_epochs = 50
-else:
-    num_epochs = 200
+num_epochs = 200
 model.fit_generator(motion_generator, epochs=num_epochs, callbacks=[cp_callback,tb_callback])
