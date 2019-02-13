@@ -26,7 +26,10 @@ if job_name is None:
 # Get current and data directories
 dir_path = os.path.dirname(os.path.realpath(__file__))
 data_path = '/data/vision/polina/scratch/nmsingh/imagenet-data-preprocessed-'+str(n)+'/train'
-adni_dir = '/data/ddmg/voxelmorph/data/t1_mix/proc/old/resize256-crop_0/train/vols'
+
+adni_dir = '/data/ddmg/voxelmorph/data/t1_mix/proc/old/resize256-crop_0/'
+adni_dir_train = adni_dir+'train/vols'
+adni_dir_test = adni_dir+'test/vols'
 
 # Checkpointing
 checkpoint_dir = os.path.join(dir_path,'../training/',job_name)
@@ -75,8 +78,9 @@ if(pretrain):
 
 # Load data
 #generator = data_generator.DataSequence(data_path, 100, n)
-motion_generator = corrupted_data_generator.DataSequence(adni_dir, 100, n, 3, 15)
+motion_train_generator = corrupted_data_generator.DataSequence(adni_dir_train, 100, n, 3, 15)
+motion_test_generator = corrupted_data_generator.DataSequence(adni_dir_test, 100, n, 3, 15)
 
 # Train model
 num_epochs = 200
-model.fit_generator(motion_generator, epochs=num_epochs, callbacks=[cp_callback,tb_callback])
+model.fit_generator(motion_train_generator, epochs=num_epochs, validation_data=motion_test_generator, callbacks=[cp_callback,tb_callback])
