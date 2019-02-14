@@ -78,8 +78,8 @@ if(pretrain):
 
 # Load data
 #generator = data_generator.DataSequence(data_path, 100, n)
-motion_train_generator = corrupted_data_generator.DataSequence(adni_dir_train, 100, n, 3, 15)
-motion_test_generator = corrupted_data_generator.DataSequence(adni_dir_test, 100, n, 3, 15)
+motion_train_generator = corrupted_data_generator.DataSequence(adni_dir_train, 100, n)
+motion_test_generator = corrupted_data_generator.DataSequence(adni_dir_test, 100, n)
 
 # Train model
 num_epochs = 200
