@@ -14,8 +14,11 @@ parser = argparse.ArgumentParser(description='Train a model to reconstruct image
 parser.add_argument('n',type=int,help ='Dimension, in pixels, to which to crop images.')
 parser.add_argument('--name',help='Name of directories containing checkpoints/tensorboard logs.')
 parser.add_argument('--pretrain',action='store_true',help='Boolean indicating whether to pretrain the network with weights learned from images without motion corruption')
+parser.add_argument('--clean',action='store_true',help='Boolean indicating whether to train only onclean, non motion-corrupted input data')
+
 args = parser.parse_args()
 pretrain = args.pretrain
+clean = args.clean
 job_name = args.name
 n = args.n
 
@@ -25,7 +28,10 @@ if job_name is None:
 
 # Get current and data directories
 dir_path = os.path.dirname(os.path.realpath(__file__))
-data_path = '/data/vision/polina/scratch/nmsingh/imagenet-data-preprocessed-'+str(n)+'/train'
+
+imagenet_dir = '/data/vision/polina/scratch/nmsingh/imagenet-data-preprocessed-'+str(n)+'/'
+imagenet_dir_train = imagenet_dir+'train'
+imagenet_dir_test = imagenet_dir+'test'
 
 adni_dir = '/data/ddmg/voxelmorph/data/t1_mix/proc/old/resize256-crop_0/'
 adni_dir_train = adni_dir+'train/vols'
@@ -77,10 +83,15 @@ if(pretrain):
     model.load_weights('../training/automap64/cp-0200.ckpt')
 
 # Load data
-#generator = data_generator.DataSequence(data_path, 100, n)
-motion_train_generator = corrupted_data_generator.DataSequence(adni_dir_train, 100, n)
-motion_test_generator = corrupted_data_generator.DataSequence(adni_dir_test, 100, n)
+if(clean):
+    print('Training on imagenet data')
+    train_generator = data_generator.DataSequence(imagenet_dir_train, 100, n)
+    test_generator = data_generator.DataSequence(imagenet_dir_test, 100, n)
+else:
+    print('Training on brain data')
+    train_generator = corrupted_data_generator.DataSequence(adni_dir_train, 100, n)
+    test_generator = corrupted_data_generator.DataSequence(adni_dir_test, 100, n)
 
 # Train model
 num_epochs = 200
-model.fit_generator(motion_train_generator, epochs=num_epochs, validation_data=motion_test_generator, callbacks=[cp_callback,tb_callback])
+model.fit_generator(train_generator, epochs=num_epochs, validation_data=test_generator, callbacks=[cp_callback,tb_callback])
