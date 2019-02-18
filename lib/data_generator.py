@@ -28,7 +28,7 @@ def augment(batch_imgs):
     return aug_imgs
 
 def get_fft(img_array):
-    img_fft = np.fft.fft2(img_array)
+    img_fft = np.fft.fft2(img_array,axes=(1,2))
     img_fft_re = np.real(img_fft)
     img_fft_im = np.imag(img_fft)
     return np.concatenate([img_fft_re,img_fft_im], axis=3)
