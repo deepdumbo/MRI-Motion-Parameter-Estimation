@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
-import data_generator
-import corrupted_data_generator
+import imagenet_data_generator
+import brain_data_generator
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,11 +14,13 @@ parser = argparse.ArgumentParser(description='Train a model to reconstruct image
 parser.add_argument('n',type=int,help ='Dimension, in pixels, to which to crop images.')
 parser.add_argument('--name',help='Name of directories containing checkpoints/tensorboard logs.')
 parser.add_argument('--pretrain',action='store_true',help='Boolean indicating whether to pretrain the network with weights learned from images without motion corruption')
+parser.add_argument('--dataset',default='BRAIN',help='Type of data to train on; must be IMAGENET or BRAIN')
 parser.add_argument('--clean',action='store_true',help='Boolean indicating whether to train only onclean, non motion-corrupted input data')
 
 args = parser.parse_args()
-pretrain = args.pretrain
 clean = args.clean
+dataset = args.dataset.upper()
+pretrain = args.pretrain
 job_name = args.name
 n = args.n
 
@@ -83,14 +85,16 @@ if(pretrain):
     model.load_weights('../training/automap64/cp-0200.ckpt')
 
 # Load data
-if(clean):
+if(dataset=='IMAGENET'):
     print('Training on imagenet data')
-    train_generator = data_generator.DataSequence(imagenet_dir_train, 100, n)
-    test_generator = data_generator.DataSequence(imagenet_dir_test, 100, n)
-else:
+    train_generator = imagenet_data_generator.DataSequence(imagenet_dir_train, 100, n)
+    test_generator = imagenet_data_generator.DataSequence(imagenet_dir_test, 100, n)
+elif(dataset=='BRAIN'):
     print('Training on brain data')
-    train_generator = corrupted_data_generator.DataSequence(adni_dir_train, 100, n)
-    test_generator = corrupted_data_generator.DataSequence(adni_dir_test, 100, n)
+    train_generator = brain_data_generator.DataSequence(adni_dir_train, 100, n, clean)
+    test_generator = brain_data_generator.DataSequence(adni_dir_test, 100, n, clean)
+else:
+    raise ValueError('Unrecognized dataset.')
 
 # Train model
 num_epochs = 500

@@ -9,10 +9,10 @@ import os
 
 import motion
 
-def batch_corrupted_imgs(dir_name,image_names,n):
+def batch_imgs(dir_name,image_names,n,clean):
     batch_imgs = []
     batch_ks = []
-    i=0
+    
     for img in image_names:
         vol_data = np.load(os.path.join(dir_name,img))['vol_data']
         _,_,z = vol_data.shape
@@ -21,8 +21,11 @@ def batch_corrupted_imgs(dir_name,image_names,n):
         img_data = np.array(Image.fromarray(img_data).resize((n,n)))
         img_data = img_data-img_data.mean()
         img_data = img_data/np.max(img_data)
-
-        num_pix = np.random.randint(0,10)
+        
+        if(clean):
+            num_pix = 0
+        else:
+            num_pix = np.random.randint(0,10)
         k_line = np.random.randint(0,32)
 
         _,corrupted_img,corrupted_k = motion.add_horiz_translation(img_data,num_pix,k_line,return_k=True)
@@ -33,18 +36,16 @@ def batch_corrupted_imgs(dir_name,image_names,n):
         corrupted_k = np.concatenate([corrupted_k_re,corrupted_k_im], axis=2)
         batch_imgs.append(np.expand_dims(img_data,axis=-1))
         batch_ks.append(corrupted_k)
-        
-        i+=1
     
     batch_imgs = np.stack(batch_imgs)
     batch_ks = np.stack(batch_ks)
     return(batch_imgs,batch_ks)
 
 class DataSequence(keras.utils.Sequence):
-    def __init__(self, data_path, batch_size, n):
+    def __init__(self, data_path, batch_size, n, clean):
         self.dir_name = data_path
         self.img_names = os.listdir(data_path)
-        self.batch_y, self.batch_x = batch_corrupted_imgs(self.dir_name,self.img_names,n)
+        self.batch_y, self.batch_x = batch_imgs(self.dir_name,self.img_names,n,clean)
         self.batch_size = batch_size
         self.n = n
 
