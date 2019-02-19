@@ -7,6 +7,8 @@ from PIL import Image
 
 import os
 
+import motion
+
 def list_imgs(data_path):
     imgs = []
     for path, subdirs, files in os.walk(data_path):
@@ -28,10 +30,23 @@ def augment(batch_imgs):
     return aug_imgs
 
 def get_fft(img_array):
-    img_fft = np.fft.fft2(img_array,axes=(1,2))
-    img_fft_re = np.real(img_fft)
-    img_fft_im = np.imag(img_fft)
-    return np.concatenate([img_fft_re,img_fft_im], axis=3)
+    num_pix = 0
+    k_line = 0
+
+    batch_ks = []
+    batch_size = np.shape(img_array)[0]
+    for i in range(batch_size):
+        img = img_array[i,:,:,0]
+        _,_,k = motion.add_horiz_translation(img,num_pix,k_line,return_k=True)
+        k = np.expand_dims(k,-1)
+        k_re = np.real(k)
+        k_im = np.imag(k)
+        k = np.concatenate([k_re,k_im], axis=2)
+        batch_ks.append(k)
+    
+    batch_ks = np.stack(batch_ks)
+    return batch_ks
+
 
 class DataSequence(keras.utils.Sequence):
     def __init__(self, data_path, batch_size, n):
