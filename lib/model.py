@@ -93,5 +93,5 @@ else:
     test_generator = corrupted_data_generator.DataSequence(adni_dir_test, 100, n)
 
 # Train model
-num_epochs = 200
+num_epochs = 500
 model.fit_generator(train_generator, epochs=num_epochs, validation_data=test_generator, callbacks=[cp_callback,tb_callback])
