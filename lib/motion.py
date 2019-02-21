@@ -47,6 +47,17 @@ def add_rotation(sl,angle,k_line):
     sl_motion = np.fft.ifft2(sl_k_combined)
     return sl_rotate, sl_motion
 
+# Induce a rotation and a horizontal translation, within a slice
+def add_rotation_and_translation(sl,angle,num_pix,k_line,return_k=False):
+    sl_rotate = ndimage.rotate(sl, angle, reshape=False)
+    sl_moved = ndimage.interpolation.shift(sl_rotate,[0,num_pix])
+    sl_k = np.fft.fftshift(np.fft.fft2(sl))
+    sl_k_rotate = np.fft.fftshift(np.fft.fft2(sl_moved))
+    sl_k_combined = sl_k
+    sl_k_combined[:,:k_line] = sl_k_rotate[:,:k_line]
+    sl_motion = np.fft.ifft2(np.fft.ifftshift(sl_k_combined))
+    return sl_motion, sl_k_combined
+
 def plot_rotation(img):
     fig,axes = plt.subplots( 4,4, figsize=[12,12] )
     numdegs = [0,5,10,20]

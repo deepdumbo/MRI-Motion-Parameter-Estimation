@@ -9,7 +9,7 @@ import os
 
 import motion
 
-def batch_imgs(dir_name,image_names,n,clean):
+def batch_imgs(dir_name,image_names,n,corruption):
     batch_imgs = []
     batch_ks = []
     
@@ -22,13 +22,21 @@ def batch_imgs(dir_name,image_names,n,clean):
         img_data = img_data-img_data.mean()
         img_data = img_data/np.max(img_data)
         
-        if(clean):
+        if(corruption=='CLEAN'):
             num_pix = 0
-        else:
+            angle = 0
+        elif(corruption=='TRANS'):
             num_pix = np.random.randint(0,10)
+            angle = 0
+        elif(corruption=='ALL'):
+            num_pix = np.random.randint(0,10)
+            angle = np.random.randint(0,45)
+        else:
+            raise ValueError('Unrecognized motion corruption setting.')
+
         k_line = np.random.randint(0,32)
 
-        _,corrupted_img,corrupted_k = motion.add_horiz_translation(img_data,num_pix,k_line,return_k=True)
+        corrupted_img,corrupted_k = motion.add_rotation_and_translation(img_data,angle,num_pix,k_line,return_k=True)
 
         corrupted_k = np.expand_dims(corrupted_k,-1)
         corrupted_k_re = np.real(corrupted_k)
@@ -42,10 +50,10 @@ def batch_imgs(dir_name,image_names,n,clean):
     return(batch_imgs,batch_ks)
 
 class DataSequence(keras.utils.Sequence):
-    def __init__(self, data_path, batch_size, n, clean):
+    def __init__(self, data_path, batch_size, n, corruption):
         self.dir_name = data_path
         self.img_names = os.listdir(data_path)
-        self.batch_y, self.batch_x = batch_imgs(self.dir_name,self.img_names,n,clean)
+        self.batch_y, self.batch_x = batch_imgs(self.dir_name,self.img_names,n,corruption)
         self.batch_size = batch_size
         self.n = n
 

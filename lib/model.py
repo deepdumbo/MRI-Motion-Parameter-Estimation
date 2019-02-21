@@ -15,10 +15,10 @@ parser.add_argument('n',type=int,help ='Dimension, in pixels, to which to crop i
 parser.add_argument('--name',help='Name of directories containing checkpoints/tensorboard logs.')
 parser.add_argument('--pretrain',action='store_true',help='Boolean indicating whether to pretrain the network with weights learned from images without motion corruption')
 parser.add_argument('--dataset',default='BRAIN',help='Type of data to train on; must be IMAGENET or BRAIN')
-parser.add_argument('--clean',action='store_true',help='Boolean indicating whether to train only onclean, non motion-corrupted input data')
+parser.add_argument('--corruption',default='ALL',help='String indicating whether to train a model with no motion corruption, translations, or rotations and translations; must be CLEAN, TRANS, or ALL')
 
 args = parser.parse_args()
-clean = args.clean
+corruption = args.corruption.upper()
 dataset = args.dataset.upper()
 pretrain = args.pretrain
 job_name = args.name
@@ -91,8 +91,8 @@ if(dataset=='IMAGENET'):
     test_generator = imagenet_data_generator.DataSequence(imagenet_dir_test, 100, n)
 elif(dataset=='BRAIN'):
     print('Training on brain data')
-    train_generator = brain_data_generator.DataSequence(adni_dir_train, 100, n, clean)
-    test_generator = brain_data_generator.DataSequence(adni_dir_test, 100, n, clean)
+    train_generator = brain_data_generator.DataSequence(adni_dir_train, 100, n, corruption)
+    test_generator = brain_data_generator.DataSequence(adni_dir_test, 100, n, corruption)
 else:
     raise ValueError('Unrecognized dataset.')
 
