@@ -22,7 +22,7 @@ config_path = args.config
 config = configparser.ConfigParser()
 config.read(args.config)
 
-job_name = config['SETUP']['job_name']
+job_name = config.get('SETUP','job_name')
 
 n = config.getint('DATA','n')
 dataset = config.get('DATA','dataset')
