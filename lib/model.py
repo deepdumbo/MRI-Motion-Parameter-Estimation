@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import argparse
 import os
 import datetime
+import math
 
 parser = argparse.ArgumentParser(description='Train a model to reconstruct images from k-space data.')
 parser.add_argument('n',type=int,help ='Dimension, in pixels, to which to crop images.')
@@ -16,8 +17,10 @@ parser.add_argument('--name',help='Name of directories containing checkpoints/te
 parser.add_argument('--pretrain',action='store_true',help='Boolean indicating whether to pretrain the network with weights learned from images without motion corruption')
 parser.add_argument('--dataset',default='BRAIN',help='Type of data to train on; must be IMAGENET or BRAIN')
 parser.add_argument('--corruption',default='ALL',help='String indicating whether to train a model with no motion corruption, translations, or rotations and translations; must be CLEAN, TRANS, or ALL')
+parser.add_argument('--slim',action='store_true',help='Boolean indicating whether to train with a slim version of the model using only N^2 log 2N connections.')
 
 args = parser.parse_args()
+slim = args.slim
 corruption = args.corruption.upper()
 dataset = args.dataset.upper()
 pretrain = args.pretrain
@@ -60,7 +63,7 @@ tb_callback = keras.callbacks.TensorBoard(
         log_dir=tb_dir, histogram_freq=0, write_graph=True, write_images=True)
 
 # Set up model
-model = keras.Sequential([
+full_model = keras.Sequential([
     keras.layers.Flatten(input_shape=(n,n,2)),
     keras.layers.Dense(2*(n**2), activation=tf.nn.tanh),
     keras.layers.Dense(n**2, activation=tf.nn.tanh),
@@ -70,6 +73,22 @@ model = keras.Sequential([
     keras.layers.Conv2D(64, (5,5), strides=(1,1), activation=tf.nn.relu, padding='same'),
     keras.layers.Conv2DTranspose(1, (7,7), strides=(1,1), data_format='channels_last', padding='same')
     ])
+
+slim_model = keras.Sequential([
+    keras.layers.Flatten(input_shape=(n,n,2)),
+    keras.layers.Dense(int(4*(math.log(n,2))), activation=tf.nn.tanh),
+    keras.layers.Dense(int(2*math.log(n,2)), activation = tf.nn.tanh),
+    keras.layers.Dense(n**2),
+    keras.layers.Reshape((n,n,1)),
+    keras.layers.Conv2D(64, (5,5), strides=(1,1), activation=tf.nn.relu, padding='same'),
+    keras.layers.Conv2D(64, (5,5), strides=(1,1), activation=tf.nn.relu, padding='same'),
+    keras.layers.Conv2DTranspose(1, (7,7), strides=(1,1), data_format='channels_last',padding='same')
+    ])
+
+if(slim):
+    model = slim_model
+else:
+    model = full_model
 
 model.compile(optimizer=keras.optimizers.RMSprop(lr=0.00002,rho=0.9),
         loss='mean_squared_error',
