@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import argparse
 import configparser
 import os
+from shutil import copyfile
 import datetime
 import math
 
@@ -101,7 +102,8 @@ model.compile(optimizer=keras.optimizers.RMSprop(lr=0.00002,rho=0.9),
         loss='mean_squared_error',
         metrics=[keras.metrics.mae])
 
-# Write model summary to text file
+# Copy config and log model summary
+copyfile(args.config,os.path.join(checkpoint_dir,job_name+'_config.ini'))
 with open(os.path.join(checkpoint_dir,'summary.txt'),'w') as fh:
     model.summary(print_fn=lambda x: fh.write(x+'\n'))
 
