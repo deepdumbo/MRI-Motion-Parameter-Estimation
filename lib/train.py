@@ -1,5 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
+import models
 import imagenet_data_generator
 import brain_data_generator
 
@@ -68,33 +69,10 @@ else:
 tb_callback = keras.callbacks.TensorBoard(
         log_dir=tb_dir, histogram_freq=0, write_graph=True, write_images=True)
 
-# Set up model
-full_model = keras.Sequential([
-    keras.layers.Flatten(input_shape=(n,n,2)),
-    keras.layers.Dense(2*(n**2), activation=tf.nn.tanh),
-    keras.layers.Dense(n**2, activation=tf.nn.tanh),
-    keras.layers.Dense(n**2),
-    keras.layers.Reshape((n,n,1)),
-    keras.layers.Conv2D(64, (5,5), strides=(1,1), activation=tf.nn.relu, padding='same'),
-    keras.layers.Conv2D(64, (5,5), strides=(1,1), activation=tf.nn.relu, padding='same'),
-    keras.layers.Conv2DTranspose(1, (7,7), strides=(1,1), data_format='channels_last', padding='same')
-    ])
-
-slim_model = keras.Sequential([
-    keras.layers.Flatten(input_shape=(n,n,2)),
-    keras.layers.Dense(int(4*(math.log(n,2))), activation=tf.nn.tanh),
-    keras.layers.Dense(int(2*math.log(n,2)), activation = tf.nn.tanh),
-    keras.layers.Dense(n**2),
-    keras.layers.Reshape((n,n,1)),
-    keras.layers.Conv2D(64, (5,5), strides=(1,1), activation=tf.nn.relu, padding='same'),
-    keras.layers.Conv2D(64, (5,5), strides=(1,1), activation=tf.nn.relu, padding='same'),
-    keras.layers.Conv2DTranspose(1, (7,7), strides=(1,1), data_format='channels_last',padding='same')
-    ])
-
 if(architecture=='SLIM'):
-    model = slim_model
+    model = models.get_slim_model(n)
 elif(architecture=='STANDARD'):
-    model = full_model
+    model = models.get_full_model(n)
 else:
     raise ValueError('Unrecognized architecture.')
 
