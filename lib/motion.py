@@ -10,11 +10,11 @@ import numpy as np
 # Induce horizontal translation, within a slice
 def add_horiz_translation(sl,num_pix,k_line,return_k=False):
     sl_slide = ndimage.interpolation.shift(sl,[0,num_pix])
-    sl_k = np.fft.fft2(sl)
-    sl_k_slide = np.fft.fft2(sl_slide)
+    sl_k = np.fft.fftshift(np.fft.fft2(sl))
+    sl_k_slide = np.fft.fftshift(np.fft.fft2(sl_slide))
     sl_k_combined = sl_k
     sl_k_combined[:,:k_line] = sl_k_slide[:,:k_line]
-    sl_motion = np.fft.ifft2(sl_k_combined)
+    sl_motion = np.fft.ifft2(np.fft.ifftshift(sl_k_combined))
     if(return_k):
         return sl_slide, sl_motion, sl_k_combined
     else:
@@ -40,11 +40,11 @@ def plot_horiz_trans(img):
 # Induce rotation, within a slice
 def add_rotation(sl,angle,k_line):
     sl_rotate = ndimage.rotate(sl, angle, reshape=False)
-    sl_k = np.fft.fft2(sl)
-    sl_k_rotate = np.fft.fft2(sl_rotate)
+    sl_k = np.fft.fftshift(np.fft.fft2(sl))
+    sl_k_rotate = np.fft.fftshift(np.fft.fft2(sl_rotate))
     sl_k_combined = sl_k
     sl_k_combined[:,:k_line] = sl_k_rotate[:,:k_line]
-    sl_motion = np.fft.ifft2(sl_k_combined)
+    sl_motion = np.fft.ifft2(np.fft.ifftshift(sl_k_combined))
     return sl_rotate, sl_motion
 
 # Induce a rotation and a horizontal translation, within a slice
@@ -80,11 +80,11 @@ def add_oop_horiz_translation(img,num_pix,k_line):
     img_slide = ndimage.interpolation.shift(img,[0,0,num_pix])
     sl = img[:,:,int(img.shape[2]/2)]
     sl_slide = img_slide[:,:,int(img.shape[2]/2)]
-    sl_k = np.fft.fft2(sl)
-    sl_k_slide = np.fft.fft2(sl_slide)
+    sl_k = np.fft.fftshift(np.fft.fft2(sl))
+    sl_k_slide = np.fft.fftshift(np.fft.fft2(sl_slide))
     sl_k_combined = sl_k
     sl_k_combined[:,:k_line] = sl_k_slide[:,:k_line]
-    sl_motion = np.fft.ifft2(sl_k_combined)
+    sl_motion = np.fft.ifft2(np.fft.ifftshift(sl_k_combined))
     return sl_slide, sl_motion
 
 def plot_oop_horiz_trans(img):
