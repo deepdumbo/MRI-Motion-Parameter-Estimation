@@ -23,8 +23,6 @@ config_path = args.config
 config = configparser.ConfigParser()
 config.read(args.config)
 
-job_name = config.get('SETUP','job_name')
-
 n = config.getint('DATA','n')
 dataset = config.get('DATA','dataset')
 corruption = config.get('DATA','corruption').upper()
@@ -33,6 +31,13 @@ architecture = config.get('MODEL','architecture')
 
 pretrain = config.getboolean('TRAINING','pretrain')
 num_epochs = config.getint('TRAINING','num_epochs')
+
+if(pretrain):
+    pretrain_string = 'True'
+else:
+    pretrain_string = 'False'
+
+job_name = dataset+'-'+corruption+'-'+architecture+'-'+pretrain_string+'-'+str(num_epochs)+'epoch-'+str(n)
 
 # Set up job name
 if job_name is None:
