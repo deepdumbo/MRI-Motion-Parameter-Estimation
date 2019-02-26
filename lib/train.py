@@ -73,6 +73,8 @@ if(architecture=='SLIM'):
     model = models.get_slim_model(n)
 elif(architecture=='STANDARD'):
     model = models.get_full_model(n)
+elif(architecture=='CONV'):
+    model = models.get_conv_model(n)
 else:
     raise ValueError('Unrecognized architecture.')
 
