@@ -9,7 +9,7 @@ import os
 
 import motion
 
-def batch_imgs(dir_name,image_names,n,corruption):
+def batch_imgs(dir_name,image_names,n,corruption,output_domain):
     batch_imgs = []
     batch_ks = []
     
@@ -42,18 +42,25 @@ def batch_imgs(dir_name,image_names,n,corruption):
         corrupted_k_re = np.real(corrupted_k)
         corrupted_k_im = np.imag(corrupted_k)
         corrupted_k = np.concatenate([corrupted_k_re,corrupted_k_im], axis=2)
-        batch_imgs.append(np.expand_dims(img_data,axis=-1))
+        if(output_domain=='IMAGE'):
+            batch_imgs.append(np.expand_dims(img_data,axis=-1))
+        elif(output_domain=='FREQUENCY'):
+            true_k = np.expand_dims(np.fft.fftshift(np.fft.fft2(img_data)), axis=-1)
+            true_k_re = np.real(true_k)
+            true_k_im = np.imag(true_k)
+            true_k = np.concatenate([true_k_re,true_k_im], axis=2)
+            batch_imgs.append(true_k)
         batch_ks.append(corrupted_k)
-    
+            
     batch_imgs = np.stack(batch_imgs)
     batch_ks = np.stack(batch_ks)
     return(batch_imgs,batch_ks)
 
 class DataSequence(keras.utils.Sequence):
-    def __init__(self, data_path, batch_size, n, corruption):
+    def __init__(self, data_path, batch_size, n, corruption, output_domain):
         self.dir_name = data_path
         self.img_names = os.listdir(data_path)
-        self.batch_y, self.batch_x = batch_imgs(self.dir_name,self.img_names,n,corruption)
+        self.batch_y, self.batch_x = batch_imgs(self.dir_name,self.img_names,n,corruption,output_domain)
         self.batch_size = batch_size
         self.n = n
 

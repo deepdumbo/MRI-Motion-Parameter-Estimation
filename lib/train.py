@@ -28,6 +28,12 @@ dataset = config.get('DATA','dataset')
 corruption = config.get('DATA','corruption').upper()
 
 architecture = config.get('MODEL','architecture')
+if(config.has_option('MODEL','output_domain')):
+    output_domain = config.get('MODEL','output_domain')
+    if(dataset=='IMAGENET' and output_domain=='FREQUENCY'):
+        raise ValueError('Invalid dataset and output domain combination.')
+else:
+    output_domain = 'IMAGE'
 
 pretrain = config.getboolean('TRAINING','pretrain')
 num_epochs = config.getint('TRAINING','num_epochs')
@@ -37,7 +43,7 @@ if(pretrain):
 else:
     pretrain_string = 'False'
 
-job_name = dataset+'-'+corruption+'-'+architecture+'-'+pretrain_string+'-'+str(num_epochs)+'epoch-'+str(n)
+job_name = dataset+'-'+corruption+'-'+architecture+'-'+output_domain+'_DOMAIN-'+pretrain_string+'-'+str(num_epochs)+'epoch-'+str(n)
 
 # Set up job name
 if job_name is None:
@@ -104,8 +110,8 @@ if(dataset=='IMAGENET'):
     test_generator = imagenet_data_generator.DataSequence(imagenet_dir_test, 100, n)
 elif(dataset=='BRAIN'):
     print('Training on brain data')
-    train_generator = brain_data_generator.DataSequence(adni_dir_train, 100, n, corruption)
-    test_generator = brain_data_generator.DataSequence(adni_dir_test, 100, n, corruption)
+    train_generator = brain_data_generator.DataSequence(adni_dir_train, 100, n, corruption, output_domain)
+    test_generator = brain_data_generator.DataSequence(adni_dir_test, 100, n, corruption, output_domain)
 else:
     raise ValueError('Unrecognized dataset.')
 
