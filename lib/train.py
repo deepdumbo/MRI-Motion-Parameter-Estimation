@@ -86,6 +86,8 @@ elif(architecture=='STANDARD'):
     model = models.get_full_model(n)
 elif(architecture=='CONV'):
     model = models.get_conv_model(n)
+elif(architecture=='UNET'):
+    model = models.get_Unet(n)
 else:
     raise ValueError('Unrecognized architecture.')
 
