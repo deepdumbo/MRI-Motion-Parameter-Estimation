@@ -1,0 +1,3 @@
+brain64unetall.ini
+brain64unet.ini
+brain64unettrans.ini
