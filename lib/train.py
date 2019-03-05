@@ -35,6 +35,12 @@ if(config.has_option('MODEL','output_domain')):
 else:
     output_domain = 'IMAGE'
 
+if(architecture=='UNET'):
+    if(config.has_option('MODEL','nonlinearity')):
+        nonlinearity = config.get('MODEL','nonlinearity')
+    else:
+        nonlinearity = 'relu'
+
 pretrain = config.getboolean('TRAINING','pretrain')
 num_epochs = config.getint('TRAINING','num_epochs')
 
@@ -43,7 +49,7 @@ if(pretrain):
 else:
     pretrain_string = 'False'
 
-job_name = dataset+'-'+corruption+'-'+architecture+'-'+output_domain+'_DOMAIN-'+pretrain_string+'-'+str(num_epochs)+'epoch-'+str(n)
+job_name = dataset+'-'+corruption+'-'+architecture+'-'+nonlinearity+'-'+output_domain+'_DOMAIN-'+pretrain_string+'-'+str(num_epochs)+'epoch-'+str(n)
 
 # Set up job name
 if job_name is None:
@@ -87,7 +93,7 @@ elif(architecture=='STANDARD'):
 elif(architecture=='CONV'):
     model = models.get_conv_model(n)
 elif(architecture=='UNET'):
-    model = models.get_Unet(n)
+    model = models.get_Unet(n, nonlinearity)
 else:
     raise ValueError('Unrecognized architecture.')
 
