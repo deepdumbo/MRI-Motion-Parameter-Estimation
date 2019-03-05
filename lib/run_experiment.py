@@ -15,4 +15,4 @@ config_path = '/data/vision/polina/scratch/nmsingh/dev/Motion-Experiments/config
 
 for experiment in experiments:
     this_config = os.path.join(config_path,experiment)
-    subprocess.Popen(['srun --gres=gpu:titan -t 0 python train.py ' + this_config],shell=True)
+    subprocess.Popen(['srun -p gpu --gres=gpu:titan:1 -t 0 python train.py ' + this_config],shell=True)
