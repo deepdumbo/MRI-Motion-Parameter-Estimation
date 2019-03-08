@@ -77,17 +77,6 @@ def add_rotation_and_translation(sl,angle,num_pix,k_line,return_k=False):
     sl_motion = np.fft.ifft2(np.fft.ifftshift(sl_k_combined))
     return sl_motion, sl_k_combined
 
-# Induce a rotation and a horizontal translation, within a slice, and fill it in
-def add_rotation_and_translation(sl,angle,num_pix,k_line,return_k=False):
-    sl_rotate = ndimage.rotate(sl, angle, reshape=False)
-    sl_moved = ndimage.interpolation.shift(sl_rotate,[0,num_pix])
-    sl_k = np.fft.fftshift(np.fft.fft2(sl))
-    sl_k_rotate = np.fft.fftshift(np.fft.fft2(sl_moved))
-    sl_k_combined = sl_k
-    sl_k_combined[:,:k_line] = sl_k_rotate[:,:k_line]
-    sl_motion = np.fft.ifft2(np.fft.ifftshift(sl_k_combined))
-    return sl_motion, sl_k_combined
-
 def get_pixels_to_fill(sl,angle,num_pix):
     blank = np.zeros(sl.shape)
     blank_rotate = ndimage.rotate(blank, angle, reshape=False, cval=1)
