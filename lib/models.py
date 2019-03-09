@@ -27,16 +27,15 @@ def get_slim_model(n):
         Conv2DTranspose(1, (7,7), strides=(1,1), data_format='channels_last',padding='same')
         ]))
 
-def get_conv_model(n):
+def get_conv_model(n, input_size):
     return(keras.Sequential([
-        Conv2DTranspose(1,(5,5), input_shape=(n,n,2), strides=(1,1), data_format='channels_last',padding='same'),
+        Conv2DTranspose(1,(5,5), input_shape=input_size, strides=(1,1), data_format='channels_last',padding='same'),
         Conv2D(64, (5,5), strides=(1,1), activation=tf.nn.relu, padding='same'),
         Conv2D(64, (5,5), strides=(1,1), activation=tf.nn.relu, padding='same'),
         Conv2DTranspose(1, (7,7), strides=(1,1), data_format='channels_last', padding='same')
         ]))
 
-def get_Unet(n, nonlinearity):
-    input_size = (n, n, 2)
+def get_Unet(n, nonlinearity, input_size):
 
     inputs = Input(input_size)
     conv1 = Conv2D(64, 3, activation = nonlinearity, padding = 'same', kernel_initializer = 'he_normal')(inputs)
@@ -77,7 +76,7 @@ def get_Unet(n, nonlinearity):
     conv9 = Conv2D(64, 3, activation = nonlinearity, padding = 'same', kernel_initializer = 'he_normal')(merge9)
     conv9 = Conv2D(64, 3, activation = nonlinearity, padding = 'same', kernel_initializer = 'he_normal')(conv9)
     conv9 = Conv2D(2, 3, activation = nonlinearity, padding = 'same', kernel_initializer = 'he_normal')(conv9)
-    conv10 = Conv2D(2, 1, activation = 'linear')(conv9)
+    conv10 = Conv2D(input_size[2], 1, activation = 'linear')(conv9)
     model = keras.models.Model(inputs = inputs, outputs = conv10)
 
     return model

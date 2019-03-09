@@ -9,9 +9,9 @@ import os
 
 import motion
 
-def batch_imgs(dir_name,image_names,n,corruption,output_domain):
-    batch_imgs = []
-    batch_ks = []
+def batch_imgs(dir_name,image_names,n,corruption,input_domain,output_domain):
+    inputs = []
+    outputs = []
     
     for img in image_names:
         vol_data = np.load(os.path.join(dir_name,img))['vol_data']
@@ -43,24 +43,29 @@ def batch_imgs(dir_name,image_names,n,corruption,output_domain):
         corrupted_k_im = np.imag(corrupted_k)
         corrupted_k = np.concatenate([corrupted_k_re,corrupted_k_im], axis=2)
         if(output_domain=='IMAGE'):
-            batch_imgs.append(np.expand_dims(img_data,axis=-1))
+            outputs.append(np.expand_dims(img_data,axis=-1))
         elif(output_domain=='FREQUENCY'):
             true_k = np.expand_dims(np.fft.fftshift(np.fft.fft2(img_data)), axis=-1)
             true_k_re = np.real(true_k)
             true_k_im = np.imag(true_k)
             true_k = np.concatenate([true_k_re,true_k_im], axis=2)
-            batch_imgs.append(true_k)
-        batch_ks.append(corrupted_k)
+            outputs.append(true_k)
+
+        if(input_domain=='FREQUENCY'):
+            inputs.append(corrupted_k)
+        elif(input_domain=='IMAGE'):
+            inputs.append(np.expand_dims(corrupted_img,axis=-1))
             
-    batch_imgs = np.stack(batch_imgs)
-    batch_ks = np.stack(batch_ks)
-    return(batch_imgs,batch_ks)
+    inputs = np.stack(inputs)        
+    outputs = np.stack(outputs)
+
+    return(inputs,outputs)
 
 class DataSequence(keras.utils.Sequence):
-    def __init__(self, data_path, batch_size, n, corruption, output_domain):
+    def __init__(self, data_path, batch_size, n, corruption, input_domain, output_domain):
         self.dir_name = data_path
         self.img_names = os.listdir(data_path)
-        self.batch_y, self.batch_x = batch_imgs(self.dir_name,self.img_names,n,corruption,output_domain)
+        self.batch_x, self.batch_y = batch_imgs(self.dir_name,self.img_names,n,corruption,input_domain,output_domain)
         self.batch_size = batch_size
         self.n = n
 

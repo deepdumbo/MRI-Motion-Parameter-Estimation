@@ -28,6 +28,11 @@ dataset = config.get('DATA','dataset')
 corruption = config.get('DATA','corruption').upper()
 
 architecture = config.get('MODEL','architecture')
+if(config.has_option('MODEL','input_domain')):
+    input_domain = config.get('MODEL','input_domain')
+else:
+    input_domain = 'FREQUENCY'
+
 if(config.has_option('MODEL','output_domain')):
     output_domain = config.get('MODEL','output_domain')
     if(dataset=='IMAGENET' and output_domain=='FREQUENCY'):
@@ -35,11 +40,10 @@ if(config.has_option('MODEL','output_domain')):
 else:
     output_domain = 'IMAGE'
 
-if(architecture=='UNET'):
-    if(config.has_option('MODEL','nonlinearity')):
-        nonlinearity = config.get('MODEL','nonlinearity')
-    else:
-        nonlinearity = 'relu'
+if(architecture=='UNET' and config.has_option('MODEL','nonlinearity')):
+    nonlinearity = config.get('MODEL','nonlinearity')
+else:
+    nonlinearity = 'relu'
 
 pretrain = config.getboolean('TRAINING','pretrain')
 num_epochs = config.getint('TRAINING','num_epochs')
@@ -49,7 +53,7 @@ if(pretrain):
 else:
     pretrain_string = 'False'
 
-job_name = dataset+'-'+corruption+'-'+architecture+'-'+nonlinearity+'-'+output_domain+'_DOMAIN-'+pretrain_string+'-'+str(num_epochs)+'epoch-'+str(n)
+job_name = dataset+'-'+corruption+'-'+architecture+'-'+nonlinearity+'-'+input_domain+'_INDOMAIN-'+output_domain+'_OUTDOMAIN-'+pretrain_string+'-'+str(num_epochs)+'epoch-'+str(n)
 
 # Set up job name
 if job_name is None:
@@ -91,9 +95,15 @@ if(architecture=='SLIM'):
 elif(architecture=='STANDARD'):
     model = models.get_full_model(n)
 elif(architecture=='CONV'):
-    model = models.get_conv_model(n)
+    if(input_domain =='IMAGE'):
+        model = models.get_conv_model(n, (n,n,1))
+    elif(input_domain =='FREQUENCY'):
+        model = models.get_conv_model(n, (n,n,2))
 elif(architecture=='UNET'):
-    model = models.get_Unet(n, nonlinearity)
+    if(input_domain == 'IMAGE'):
+        model = models.get_Unet(n, nonlinearity, (n,n,1))
+    elif(input_domain =='FREQUENCY'):
+        model = models.get_Unet(n, nonlinearity, (n,n,2))
 else:
     raise ValueError('Unrecognized architecture.')
 
@@ -118,8 +128,8 @@ if(dataset=='IMAGENET'):
     test_generator = imagenet_data_generator.DataSequence(imagenet_dir_test, 100, n)
 elif(dataset=='BRAIN'):
     print('Training on brain data')
-    train_generator = brain_data_generator.DataSequence(adni_dir_train, 100, n, corruption, output_domain)
-    test_generator = brain_data_generator.DataSequence(adni_dir_test, 100, n, corruption, output_domain)
+    train_generator = brain_data_generator.DataSequence(adni_dir_train, 100, n, corruption, input_domain, output_domain)
+    test_generator = brain_data_generator.DataSequence(adni_dir_test, 100, n, corruption, input_domain, output_domain)
 else:
     raise ValueError('Unrecognized dataset.')
 
