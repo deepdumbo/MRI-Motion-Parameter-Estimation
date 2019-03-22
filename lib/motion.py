@@ -151,3 +151,12 @@ def plot_oop_horiz_trans(img):
         if(c==3):
             iax.set_xlabel(str(numpixs[r])+'-px translation')
     fig.show()
+
+# Induce motion as simulated by the next frame
+def add_next_frame(sl,sl_next,k_line,return_k=False):
+    sl_k = np.fft.fftshift(np.fft.fft2(sl))
+    sl_k_next = np.fft.fftshift(np.fft.fft2(sl_next))
+    sl_k_combined = sl_k
+    sl_k_combined[:,:k_line] = sl_k_next[:,:k_line]
+    sl_motion = np.fft.ifft2(np.fft.ifftshift(sl_k_combined))
+    return sl_motion, sl_k_combined

@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow import keras
 import models
 import imagenet_data_generator
-import brain_data_generator
+import mri_data_generator
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -70,6 +70,10 @@ adni_dir = '/data/ddmg/voxelmorph/data/t1_mix/proc/old/resize256-crop_0/'
 adni_dir_train = adni_dir+'train/vols'
 adni_dir_test = adni_dir+'test/vols'
 
+bold_dir = '/data/vision/polina/projects/fetal_data/data/split_nifti_datasets/'
+bold_dir_train = bold_dir+'train'
+bold_dir_test = bold_dir+'test'
+
 # Checkpointing
 checkpoint_dir = os.path.join(dir_path,'../training/',job_name)
 checkpoint_name = 'cp-{epoch:04d}.ckpt'
@@ -123,13 +127,14 @@ if(pretrain):
 
 # Load data
 if(dataset=='IMAGENET'):
-    print('Training on imagenet data')
     train_generator = imagenet_data_generator.DataSequence(imagenet_dir_train, 100, n)
     test_generator = imagenet_data_generator.DataSequence(imagenet_dir_test, 100, n)
 elif(dataset=='BRAIN'):
-    print('Training on brain data')
-    train_generator = brain_data_generator.DataSequence(adni_dir_train, 100, n, corruption, input_domain, output_domain)
-    test_generator = brain_data_generator.DataSequence(adni_dir_test, 100, n, corruption, input_domain, output_domain)
+    train_generator = mri_data_generator.DataSequence(adni_dir_train, 100, n, corruption, input_domain, output_domain)
+    test_generator = mri_data_generator.DataSequence(adni_dir_test, 100, n, corruption, input_domain, output_domain)
+elif(dataset=='BOLD'):
+    train_generator = mri_data_generator.DataSequence(bold_dir_train, 100, n, corruption, input_domain, output_domain)
+    test_generator = mri_data_generator.DataSequence(bold_dir_test, 100, n, corruption, input_domain, output_domain)
 else:
     raise ValueError('Unrecognized dataset.')
 
