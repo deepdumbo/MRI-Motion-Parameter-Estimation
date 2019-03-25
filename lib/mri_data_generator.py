@@ -44,6 +44,8 @@ def batch_imgs(dir_name,image_names,n,corruption,input_domain,output_domain):
         k_line = np.random.randint(0,32)
 
         if(corruption=='SEQUENTIAL'):
+            if(sl_data.shape!=(n,n) or np.isnan(sl_data).any() or np.isnone(sl_data).any()):
+                continue
             end = -(len('.npz')) #end index of volume number
             num_len = 4
             start = end-num_len #start index of volume number
@@ -52,6 +54,8 @@ def batch_imgs(dir_name,image_names,n,corruption,input_domain,output_domain):
             try:
                 next_img_vol = np.load(os.path.join(dir_name,next_name))['vol_data']
                 next_img_sl = get_mid_slice(next_img_vol,n)
+                if(next_img_sl.shape!=(n,n) or np.isnan(next_img_sl).any() or np.isnone(next_img_sl).any()):
+                    continue
             except:
                 continue
             corrupted_img,corrupted_k = motion.add_next_frame(sl_data,next_img_sl,k_line,return_k=True)
@@ -96,7 +100,7 @@ class DataSequence(keras.utils.Sequence):
         self.n = n
 
     def __len__(self):
-        return int(np.ceil(len(self.img_names)/float(self.batch_size)))
+        return int(np.ceil(len(self.batch_x)/float(self.batch_size)))
 
     def __getitem__(self, idx):
         batch_y = self.batch_y[idx*self.batch_size:(idx+1)*self.batch_size,:,:,:]
