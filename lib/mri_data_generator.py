@@ -37,24 +37,24 @@ def batch_imgs(dir_name,image_names,n,corruption,input_domain,output_domain):
             num_pix = np.random.randint(0,10)
             angle = np.random.randint(0,45)
         elif(corruption=='SEQUENTIAL'):
-            pass
+            frame_jump = np.random.randint(0,30)
         else:
             raise ValueError('Unrecognized motion corruption setting.')
 
         k_line = np.random.randint(0,32)
 
         if(corruption=='SEQUENTIAL'):
-            if(sl_data.shape!=(n,n) or np.isnan(sl_data).any() or np.isnone(sl_data).any()):
+            if(sl_data.shape!=(n,n) or np.isnan(sl_data).any()):
                 continue
             end = -(len('.npz')) #end index of volume number
             num_len = 4
             start = end-num_len #start index of volume number
-            next_img = int(img[start:end])+1
+            next_img = int(img[start:end])+frame_jump
             next_name = img[:start]+str(next_img).zfill(4)+'.npz'
             try:
                 next_img_vol = np.load(os.path.join(dir_name,next_name))['vol_data']
                 next_img_sl = get_mid_slice(next_img_vol,n)
-                if(next_img_sl.shape!=(n,n) or np.isnan(next_img_sl).any() or np.isnone(next_img_sl).any()):
+                if(next_img_sl.shape!=(n,n) or np.isnan(next_img_sl).any()):
                     continue
             except:
                 continue
