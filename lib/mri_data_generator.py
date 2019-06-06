@@ -10,22 +10,26 @@ import os
 
 import motion
 
-def get_mid_slice(vol_data,n):
+def get_mid_slice(vol_data,n,patch=False,coord=None):
     _,_,z = vol_data.shape
 
     sl_data = vol_data[:,:,int(z/2)]
-    sl_data = np.array(Image.fromarray(sl_data).resize((n,n)))
+    if(patch):
+        sl_data = sl_data[coord[0]:coord[0]+n,coord[1]:coord[1]+n]
+    else:
+        sl_data = np.array(Image.fromarray(sl_data).resize((n,n)))
     sl_data = sl_data - sl_data.mean()
     sl_data = sl_data/np.max(sl_data)
     return sl_data
 
-def batch_imgs(dir_name,image_names,n,corruption,input_domain,output_domain):
+def batch_imgs(dir_name,image_names,n,corruption,input_domain,output_domain,patch):
     inputs = []
     outputs = []
     
     for img in image_names:
         vol_data = np.load(os.path.join(dir_name,img))['vol_data']
-        sl_data = get_mid_slice(vol_data,n)
+        coord = np.random.randint(vol_data.shape[0]-n,size=2)
+        sl_data  = get_mid_slice(vol_data,n,patch,coord)
        
         if(corruption=='CLEAN'):
             num_pix = 0
@@ -53,7 +57,7 @@ def batch_imgs(dir_name,image_names,n,corruption,input_domain,output_domain):
             next_name = img[:start]+str(next_img).zfill(4)+'.npz'
             try:
                 next_img_vol = np.load(os.path.join(dir_name,next_name))['vol_data']
-                next_img_sl = get_mid_slice(next_img_vol,n)
+                next_img_sl = get_mid_slice(next_img_vol,n,patch,coord)
                 if(next_img_sl.shape!=(n,n) or np.isnan(next_img_sl).any()):
                     continue
             except:
@@ -86,7 +90,7 @@ def batch_imgs(dir_name,image_names,n,corruption,input_domain,output_domain):
     return(inputs,outputs)
 
 class DataSequence(keras.utils.Sequence):
-    def __init__(self, data_path, batch_size, n, corruption, input_domain, output_domain):
+    def __init__(self, data_path, batch_size, n, corruption, input_domain, output_domain,patch):
         self.dir_name = data_path
         if(corruption=='SEQUENTIAL'):
             self.img_names = []
@@ -95,7 +99,7 @@ class DataSequence(keras.utils.Sequence):
                     self.img_names.append(os.path.join(s,v))
         else:
             self.img_names = os.listdir(data_path)
-        self.batch_x, self.batch_y = batch_imgs(self.dir_name,self.img_names,n,corruption,input_domain,output_domain)
+        self.batch_x, self.batch_y = batch_imgs(self.dir_name,self.img_names,n,corruption,input_domain,output_domain,patch)
         self.batch_size = batch_size
         self.n = n
 
