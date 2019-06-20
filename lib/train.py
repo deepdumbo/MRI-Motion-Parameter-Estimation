@@ -72,7 +72,7 @@ adni_dir = '/data/ddmg/voxelmorph/data/t1_mix/proc/old/resize256-crop_0/'
 adni_dir_train = adni_dir+'train/vols'
 adni_dir_test = adni_dir+'test/vols'
 
-bold_dir = '/data/vision/polina/projects/fetal_data/data/split_nifti_datasets/'
+bold_dir = '/data/vision/polina/scratch/nmsingh/bold-data/'
 bold_dir_train = bold_dir+'train'
 bold_dir_test = bold_dir+'test'
 
@@ -132,13 +132,13 @@ if(dataset=='IMAGENET'):
     train_generator = imagenet_data_generator.DataSequence(imagenet_dir_train, 100, n)
     test_generator = imagenet_data_generator.DataSequence(imagenet_dir_test, 100, n)
 elif(dataset=='BRAIN'):
-    train_generator = mri_data_generator.DataSequence(adni_dir_train, 100, n, corruption, input_domain, output_domain)
-    test_generator = mri_data_generator.DataSequence(adni_dir_test, 100, n, corruption, input_domain, output_domain)
+    train_generator = mri_data_generator.DataSequence(adni_dir_train, 100, n, dataset, corruption, input_domain, output_domain)
+    test_generator = mri_data_generator.DataSequence(adni_dir_test, 100, n, dataset, corruption, input_domain, output_domain)
 elif(dataset=='BOLD'):
-    train_generator = mri_data_generator.DataSequence(bold_dir_train, 100, n, corruption, input_domain, output_domain, patch)
-    test_generator = mri_data_generator.DataSequence(bold_dir_test, 100, n, corruption, input_domain, output_domain, patch)
+    train_generator = mri_data_generator.DataSequence(bold_dir_train, 100, n, dataset, corruption, input_domain, output_domain, patch)
+    test_generator = mri_data_generator.DataSequence(bold_dir_test, 100, n, dataset, corruption, input_domain, output_domain, patch)
 else:
     raise ValueError('Unrecognized dataset.')
 
 # Train model
-model.fit_generator(train_generator, epochs=num_epochs, validation_data=test_generator, callbacks=[cp_callback,tb_callback])
+model.fit_generator(train_generator, epochs=num_epochs, steps_per_epoch=100, validation_data=test_generator, callbacks=[cp_callback,tb_callback])

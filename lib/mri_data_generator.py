@@ -90,9 +90,9 @@ def batch_imgs(dir_name,image_names,n,corruption,input_domain,output_domain,patc
     return(inputs,outputs)
 
 class DataSequence(keras.utils.Sequence):
-    def __init__(self, data_path, batch_size, n, corruption, input_domain, output_domain,patch):
+    def __init__(self, data_path, batch_size, n, dataset, corruption, input_domain, output_domain,patch):
         self.dir_name = data_path
-        if(corruption=='SEQUENTIAL'):
+        if(dataset == 'BOLD'):
             self.img_names = []
             for s in sorted (os.listdir(data_path)):
                 for v in sorted(os.listdir(os.path.join(data_path,s))):
