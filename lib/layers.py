@@ -22,3 +22,7 @@ def fouriertranslate(fft_input,shift):
 
     return output
 
+def combine_rows(modulated_rows):
+    N = modulated_rows[0].get_shape().as_list()[0]
+    output = tf.concat([tf.expand_dims(modulated_rows[i][i,:],0) for i in range(N)],axis=0)
+    return output
