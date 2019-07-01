@@ -2,6 +2,7 @@ import math
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import *
+import layers
 
 def get_full_model(n):
     return(keras.Sequential([
@@ -80,3 +81,35 @@ def get_Unet(n, nonlinearity, input_size):
     model = keras.models.Model(inputs = inputs, outputs = conv10)
 
     return model
+
+def get_parameterized_model(n):
+    inputs = Input((n,n,2))
+    conv1 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(inputs)
+    conv2 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(conv1)
+    conv3 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(conv2)
+
+    def theta_estimator(processed_input):
+        conv1 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(processed_input)
+        down1 = MaxPooling2D(pool_size=(2,2))(conv1)
+        conv2 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(down1)
+        down2 = MaxPooling2D(pool_size=(2,2))(conv2)
+        conv3 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(down2)
+        down3 = MaxPooling2D(pool_size=(2,2))(conv3)
+        flat = Flatten()(down3)
+        theta = Dense(2, activation = tf.nn.relu)(flat)
+        return theta
+
+    theta_modules = []
+    trans_layers = []
+    for i in range(n):
+        theta_modules.append(theta_estimator(conv3))
+        layer = keras.layers.Lambda(layers.batch_fouriertranslate)
+        trans_layers.append(layer((inputs,theta_modules[i])))
+    
+    output = keras.layers.Lambda(layers.combine_rows)(trans_layers)
+    model = keras.models.Model(inputs = inputs, outputs = output)
+    
+    return model
+
+
+
