@@ -67,15 +67,25 @@ def plot_rotation(img):
     fig.show()
 
 # Induce a rotation and a horizontal translation, within a slice
-def add_rotation_and_translation(sl,angle,num_pix,k_line,return_k=False):
-    sl_rotate = ndimage.rotate(sl, angle, reshape=False)
-    sl_moved = ndimage.interpolation.shift(sl_rotate,[0,num_pix])
-    sl_k = np.fft.fftshift(np.fft.fft2(sl))
-    sl_k_rotate = np.fft.fftshift(np.fft.fft2(sl_moved))
-    sl_k_combined = sl_k
-    sl_k_combined[:,:k_line] = sl_k_rotate[:,:k_line]
-    sl_motion = np.fft.ifft2(np.fft.ifftshift(sl_k_combined))
-    return sl_motion, sl_k_combined
+def add_rotation_and_translation(sl,angle,num_pix,k_line,corruption_extent='ONE',return_k=False):
+    if(corruption_extent=='ALL'):
+        sl_k_combined = np.empty(sl.shape,dtype='complex64')
+        for i in range(sl.shape[0]):
+            sl_rotate = ndimage.rotate(sl,angle[i],reshape=False)
+            sl_moved = ndimage.interpolation.shift(sl_rotate,[0,num_pix[i]])
+            sl_after = np.fft.fftshift(np.fft.fft2(sl_moved))
+            sl_k_combined[i,:] = sl_after[i,:]
+        sl_motion = np.fft.ifft2(np.fft.ifftshift(sl_k_combined))
+        return sl_motion, sl_k_combined
+    else:
+        sl_rotate = ndimage.rotate(sl, angle, reshape=False)
+        sl_moved = ndimage.interpolation.shift(sl_rotate,[0,num_pix])
+        sl_k = np.fft.fftshift(np.fft.fft2(sl))
+        sl_k_rotate = np.fft.fftshift(np.fft.fft2(sl_moved))
+        sl_k_combined = sl_k
+        sl_k_combined[:k_line,:] = sl_k_rotate[:k_line,:]
+        sl_motion = np.fft.ifft2(np.fft.ifftshift(sl_k_combined))
+        return sl_motion, sl_k_combined
 
 def get_pixels_to_fill(sl,angle,num_pix):
     blank = np.zeros(sl.shape)
