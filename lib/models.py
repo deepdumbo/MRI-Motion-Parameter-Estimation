@@ -2,6 +2,7 @@ import math
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import *
+import numpy as np
 import layers
 
 def get_full_model(n):
@@ -79,37 +80,37 @@ def get_Unet(n, nonlinearity, input_size):
     conv9 = Conv2D(2, 3, activation = nonlinearity, padding = 'same', kernel_initializer = 'he_normal')(conv9)
     conv10 = Conv2D(input_size[2], 1, activation = 'linear')(conv9)
     model = keras.models.Model(inputs = inputs, outputs = conv10)
-
     return model
-
+    
 def get_parameterized_model(n):
     inputs = Input((n,n,2))
-    conv1 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(inputs)
-    conv2 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(conv1)
-    conv3 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(conv2)
+    conv1 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal', name = 'FirstConv')(inputs)
+    conv2 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal', name = 'SecondConv')(conv1)
+    conv3 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal', name = 'ThirdConv')(conv2)
 
-    def theta_estimator(processed_input):
-        conv1 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(processed_input)
-        down1 = MaxPooling2D(pool_size=(2,2))(conv1)
-        conv2 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(down1)
-        down2 = MaxPooling2D(pool_size=(2,2))(conv2)
-        conv3 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(down2)
-        down3 = MaxPooling2D(pool_size=(2,2))(conv3)
-        flat = Flatten()(down3)
-        theta = Dense(2, activation = tf.nn.relu)(flat)
-        return theta
-
+    conv_flat = Flatten()(conv3)
+    theta_flat = Dense(3*n, activation = tf.nn.relu)(conv_flat)
+    theta = Reshape((n,3))(theta_flat)
+    
     theta_modules = []
     trans_layers = []
+    rot_layers = []
+    mask_rot_layers = []
+    
     for i in range(n):
-        theta_modules.append(theta_estimator(conv3))
-        layer = keras.layers.Lambda(layers.batch_fouriertranslate)
-        trans_layers.append(layer((inputs,theta_modules[i])))
-    
-    output = keras.layers.Lambda(layers.combine_rows)(trans_layers)
+        theta_modules.append(theta[:,i,:])
+        
+        trans_layer = keras.layers.Lambda(layers.batch_fouriertranslate, name = 'Trans'+str(i))
+        trans_layers.append(trans_layer((inputs,theta_modules[i])))
+        
+        rot_layer = keras.layers.Lambda(layers.batch_fourierrotate, name = 'Rot'+str(i))
+        rot_layers.append(rot_layer((trans_layers[i],theta_modules[i])))
+       
+        row_masks = keras.layers.Lambda(layers.get_rowmasks, name = 'RowMasks'+str(i),arguments={'n':n})((i,tf.shape(trans_layers[i])[0]))
+        mask_rot_layer = keras.layers.Lambda(layers.batch_fourierrotate, name = 'MaskRot'+str(i))
+        mask_rot_layers.append(mask_rot_layer((row_masks,theta_modules[i])))
+        
+    output = keras.layers.Lambda(layers.combine_rot_rows)((rot_layers,mask_rot_layers))
     model = keras.models.Model(inputs = inputs, outputs = output)
-    
     return model
-
-
 

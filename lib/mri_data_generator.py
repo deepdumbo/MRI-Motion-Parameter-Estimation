@@ -97,8 +97,6 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
             
     inputs = np.stack(inputs)        
     outputs = np.stack(outputs)
-
-    print(inputs.shape)
     return(inputs,outputs)
 
 class DataSequence(keras.utils.Sequence):
