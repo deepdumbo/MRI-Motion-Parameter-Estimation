@@ -26,6 +26,10 @@ config.read(args.config)
 n = config.getint('DATA','n')
 dataset = config.get('DATA','dataset')
 corruption = config.get('DATA','corruption').upper()
+if(config.has_option('DATA','corruption_extent')):
+    corruption_extent = config.get('DATA', 'corruption_extent').upper()
+else:
+    corruption_extent = 'ONE'
 if(config.has_option('DATA','patch')):
     patch = config.getboolean('DATA','patch')
 
@@ -55,7 +59,7 @@ if(pretrain):
 else:
     pretrain_string = 'False'
 
-job_name = dataset+'-'+corruption+'-'+'PATCH'+str(patch)+'-'+architecture+'-'+nonlinearity+'-'+input_domain+'_INDOMAIN-'+output_domain+'_OUTDOMAIN-'+pretrain_string+'-'+str(num_epochs)+'epoch-'+str(n)
+job_name = dataset+'-'+corruption+'-'+corruption_extent+'-'+'PATCH'+str(patch)+'-'+architecture+'-'+nonlinearity+'-'+input_domain+'_INDOMAIN-'+output_domain+'_OUTDOMAIN-'+pretrain_string+'-'+str(num_epochs)+'epoch-'+str(n)
 
 # Set up job name
 if job_name is None:
@@ -85,7 +89,7 @@ if os.path.exists(checkpoint_dir):
 else:
     os.makedirs(checkpoint_dir)
 cp_callback = keras.callbacks.ModelCheckpoint(
-        checkpoint_path, verbose=1, period=5)
+        checkpoint_path, verbose=1, period=5, save_weights_only=True)
 
 # Tensorboard
 tb_dir = os.path.join(checkpoint_dir,'tensorboard/')
@@ -134,11 +138,11 @@ if(dataset=='IMAGENET'):
     train_generator = imagenet_data_generator.DataSequence(imagenet_dir_train, 100, n)
     test_generator = imagenet_data_generator.DataSequence(imagenet_dir_test, 100, n)
 elif(dataset=='BRAIN'):
-    train_generator = mri_data_generator.DataSequence(adni_dir_train, 100, n, dataset, corruption, input_domain, output_domain)
-    test_generator = mri_data_generator.DataSequence(adni_dir_test, 100, n, dataset, corruption, input_domain, output_domain)
+    train_generator = mri_data_generator.DataSequence(adni_dir_train, 100, n, dataset, corruption, corruption_extent, input_domain, output_domain)
+    test_generator = mri_data_generator.DataSequence(adni_dir_test, 100, n, dataset, corruption, corruption_extent, input_domain, output_domain)
 elif(dataset=='BOLD'):
-    train_generator = mri_data_generator.DataSequence(bold_dir_train, 100, n, dataset, corruption, input_domain, output_domain, patch)
-    test_generator = mri_data_generator.DataSequence(bold_dir_test, 100, n, dataset, corruption, input_domain, output_domain, patch)
+    train_generator = mri_data_generator.DataSequence(bold_dir_train, 100, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch)
+    test_generator = mri_data_generator.DataSequence(bold_dir_test, 100, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch)
 else:
     raise ValueError('Unrecognized dataset.')
 
