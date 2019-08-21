@@ -89,7 +89,8 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
             true_k_im = np.imag(true_k)
             true_k = np.concatenate([true_k_re,true_k_im], axis=2)
             outputs.append(true_k)
-
+        elif(output_domain=='THETA'):
+            outputs.append(np.transpose(np.stack([num_pix,np.zeros(num_corrupt),angle])))
         if(input_domain=='FREQUENCY'):
             inputs.append(corrupted_k)
         elif(input_domain=='IMAGE'):
@@ -102,6 +103,7 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
 class DataSequence(keras.utils.Sequence):
     def __init__(self, data_path, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain,patch=False):
         self.dir_name = data_path
+        self.output_domain = output_domain
         if(dataset == 'BOLD'):
             self.img_names = []
             for s in sorted (os.listdir(data_path)):
@@ -117,6 +119,10 @@ class DataSequence(keras.utils.Sequence):
         return int(np.ceil(len(self.batch_x)/float(self.batch_size)))
 
     def __getitem__(self, idx):
-        batch_y = self.batch_y[idx*self.batch_size:(idx+1)*self.batch_size,:,:,:]
-        batch_x = self.batch_x[idx*self.batch_size:(idx+1)*self.batch_size,:,:,:]
+        if(self.output_domain=='THETA'):
+            batch_y = self.batch_y[idx*self.batch_size:(idx+1)*self.batch_size,:,:]
+            batch_x = self.batch_x[idx*self.batch_size:(idx+1)*self.batch_size,:,:]            
+        else:
+            batch_y = self.batch_y[idx*self.batch_size:(idx+1)*self.batch_size,:,:,:]
+            batch_x = self.batch_x[idx*self.batch_size:(idx+1)*self.batch_size,:,:,:]
         return batch_x, batch_y
