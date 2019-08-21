@@ -10,15 +10,19 @@ import matplotlib.pyplot as plt
 import argparse
 import configparser
 import os
+import atexit
+from shutil import rmtree
 from shutil import copyfile
 import datetime
 import math
 
 parser = argparse.ArgumentParser(description='Train a model to reconstruct images from k-space data.')
 parser.add_argument('config',help ='Path to .ini config file.')
+parser.add_argument('--debug',help='Boolean indicating whether to run small-scale training experiment.',action='store_true')
 
 args = parser.parse_args()
 config_path = args.config
+debug = args.debug
 
 config = configparser.ConfigParser()
 config.read(args.config)
@@ -52,14 +56,24 @@ else:
     nonlinearity = 'relu'
 
 pretrain = config.getboolean('TRAINING','pretrain')
-num_epochs = config.getint('TRAINING','num_epochs')
+if(debug):
+    num_epochs = 1
+    batch_size = 1
+else:
+    num_epochs = config.getint('TRAINING','num_epochs')
+    batch_size = 100
 
 if(pretrain):
     pretrain_string = 'True'
 else:
     pretrain_string = 'False'
 
-job_name = dataset+'-'+corruption+'-'+corruption_extent+'-'+'PATCH'+str(patch)+'-'+architecture+'-'+nonlinearity+'-'+input_domain+'_INDOMAIN-'+output_domain+'_OUTDOMAIN-'+pretrain_string+'-'+str(num_epochs)+'epoch-'+str(n)
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
+if(debug):
+    job_name = 'debug-job'
+else:
+    job_name = dataset+'-'+corruption+'-'+corruption_extent+'-'+'PATCH'+str(patch)+'-'+architecture+'-'+nonlinearity+'-'+input_domain+'_INDOMAIN-'+output_domain+'_OUTDOMAIN-'+pretrain_string+'-'+str(num_epochs)+'epoch-'+str(n)
 
 # Set up job name
 if job_name is None:
@@ -90,6 +104,13 @@ else:
     os.makedirs(checkpoint_dir)
 cp_callback = keras.callbacks.ModelCheckpoint(
         checkpoint_path, verbose=1, period=5, save_weights_only=True)
+
+# Checkpoint deletion for debug mode
+if(debug):
+    def del_logs():
+        rmtree(checkpoint_dir, ignore_errors=True)
+        print('Deleted temp debug logs')
+    atexit.register(del_logs)
 
 # Tensorboard
 tb_dir = os.path.join(checkpoint_dir,'tensorboard/')
@@ -137,14 +158,14 @@ if(pretrain):
 
 # Load data
 if(dataset=='IMAGENET'):
-    train_generator = imagenet_data_generator.DataSequence(imagenet_dir_train, 100, n)
-    test_generator = imagenet_data_generator.DataSequence(imagenet_dir_test, 100, n)
+    train_generator = imagenet_data_generator.DataSequence(imagenet_dir_train, batch_size, n)
+    test_generator = imagenet_data_generator.DataSequence(imagenet_dir_test, batch_size, n)
 elif(dataset=='BRAIN'):
-    train_generator = mri_data_generator.DataSequence(adni_dir_train, 100, n, dataset, corruption, corruption_extent, input_domain, output_domain)
-    test_generator = mri_data_generator.DataSequence(adni_dir_test, 100, n, dataset, corruption, corruption_extent, input_domain, output_domain)
+    train_generator = mri_data_generator.DataSequence(adni_dir_train, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, debug=debug)
+    test_generator = mri_data_generator.DataSequence(adni_dir_test, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, debug=debug)
 elif(dataset=='BOLD'):
-    train_generator = mri_data_generator.DataSequence(bold_dir_train, 100, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch)
-    test_generator = mri_data_generator.DataSequence(bold_dir_test, 100, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch)
+    train_generator = mri_data_generator.DataSequence(bold_dir_train, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch=patch, debug=debug)
+    test_generator = mri_data_generator.DataSequence(bold_dir_test, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch=patch, debug=debug)
 else:
     raise ValueError('Unrecognized dataset.')
 
