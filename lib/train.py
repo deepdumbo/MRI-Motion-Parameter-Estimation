@@ -116,6 +116,8 @@ elif(architecture=='UNET'):
         model = models.get_Unet(n, nonlinearity, (n,n,2))
 elif(architecture=='PARAMETERIZED'):
     model = models.get_parameterized_model(n)
+elif(architecture=='PARAMETERIZED_THETA'):
+    model = models.get_theta_model(n)
 else:
     raise ValueError('Unrecognized architecture.')
 

@@ -114,3 +114,16 @@ def get_parameterized_model(n):
     model = keras.models.Model(inputs = inputs, outputs = output)
     return model
 
+def get_theta_model(n):
+    inputs = Input((n,n,2))
+    conv1 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal', name = 'FirstConv')(inputs)
+    conv2 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal', name = 'SecondConv')(conv1)
+    conv3 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal', name = 'ThirdConv')(conv2)
+
+    conv_flat = Flatten()(conv3)
+    theta_flat = Dense(3*n, activation = tf.nn.relu)(conv_flat)
+    theta = Reshape((n,3))(theta_flat)
+
+    model = keras.models.Model(inputs = inputs, outputs = theta)
+    return model
+
