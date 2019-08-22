@@ -139,6 +139,8 @@ elif(architecture=='UNET'):
 elif(architecture=='PARAMETERIZED'):
     model = models.get_parameterized_model(n)
 elif(architecture=='PARAMETERIZED_THETA'):
+    if(output_domain!='THETA'):
+        raise ValueError('Architecture '+architecture+' and output domain '+output_domain+' are incompatible.')
     model = models.get_theta_model(n)
 else:
     raise ValueError('Unrecognized architecture.')
