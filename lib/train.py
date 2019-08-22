@@ -100,7 +100,7 @@ checkpoint_dir = os.path.join(dir_path,'../training/',job_name)
 checkpoint_name = 'cp-{epoch:04d}.ckpt'
 checkpoint_path = os.path.join(checkpoint_dir,checkpoint_name)
 if os.path.exists(checkpoint_dir):
-    raise ValueError('Job name has already been used.')
+    raise ValueError('Job name has already been used: '+job_name)
 else:
     os.makedirs(checkpoint_dir)
 cp_callback = keras.callbacks.ModelCheckpoint(
