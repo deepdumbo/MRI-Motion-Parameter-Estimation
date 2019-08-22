@@ -86,9 +86,9 @@ imagenet_dir = '/data/vision/polina/scratch/nmsingh/imagenet-data-preprocessed-'
 imagenet_dir_train = imagenet_dir+'train'
 imagenet_dir_test = imagenet_dir+'test'
 
-adni_dir = '/data/ddmg/voxelmorph/data/t1_mix/proc/old/resize256-crop_0/'
+adni_dir = '/data/ddmg/voxelmorph/data/t1_mix/proc/resize256-crop_x32-adnisel/'
 adni_dir_train = adni_dir+'train/vols'
-adni_dir_test = adni_dir+'test/vols'
+adni_dir_val = adni_dir+'validate/vols'
 
 bold_dir = '/data/vision/polina/scratch/nmsingh/bold-data/'
 bold_dir_train = bold_dir+'train'
@@ -162,7 +162,7 @@ if(dataset=='IMAGENET'):
     test_generator = imagenet_data_generator.DataSequence(imagenet_dir_test, batch_size, n)
 elif(dataset=='BRAIN'):
     train_generator = mri_data_generator.DataSequence(adni_dir_train, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, debug=debug)
-    test_generator = mri_data_generator.DataSequence(adni_dir_test, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, debug=debug)
+    test_generator = mri_data_generator.DataSequence(adni_dir_val, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, debug=debug)
 elif(dataset=='BOLD'):
     train_generator = mri_data_generator.DataSequence(bold_dir_train, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch=patch, debug=debug)
     test_generator = mri_data_generator.DataSequence(bold_dir_test, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch=patch, debug=debug)
