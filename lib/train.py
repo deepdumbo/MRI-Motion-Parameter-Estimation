@@ -4,6 +4,7 @@ import models
 import imagenet_data_generator
 import mri_data_generator
 
+import random
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -148,7 +149,8 @@ model.compile(optimizer=keras.optimizers.RMSprop(lr=0.00002,rho=0.9),
 
 # Copy config and log model summary
 copyfile(args.config,os.path.join(checkpoint_dir,job_name+'_config.ini'))
-with open(os.path.join(checkpoint_dir,'summary.txt'),'w') as fh:
+summary_file = os.path.join(checkpoint_dir,'summary.txt')
+with open(summary_file,'w') as fh:
     model.summary(print_fn=lambda x: fh.write(x+'\n'))
 
 # Pretrain, if specified,
@@ -156,18 +158,35 @@ if(pretrain):
     print('Loading pretrained weights')
     model.load_weights('../training/automap64/cp-0200.ckpt')
 
-# Load data
+# Load train data
+train_seed = np.random.randint(0,100)
+np.random.seed(train_seed)
 if(dataset=='IMAGENET'):
     train_generator = imagenet_data_generator.DataSequence(imagenet_dir_train, batch_size, n)
-    test_generator = imagenet_data_generator.DataSequence(imagenet_dir_test, batch_size, n)
 elif(dataset=='BRAIN'):
     train_generator = mri_data_generator.DataSequence(adni_dir_train, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, debug=debug)
-    test_generator = mri_data_generator.DataSequence(adni_dir_val, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, debug=debug)
 elif(dataset=='BOLD'):
     train_generator = mri_data_generator.DataSequence(bold_dir_train, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch=patch, debug=debug)
+else:
+    raise ValueError('Unrecognized dataset.')
+
+# Load test data
+test_seed = 0
+np.random.seed(test_seed)
+if(dataset=='IMAGENET'):
+    test_generator = imagenet_data_generator.DataSequence(imagenet_dir_test, batch_size, n)
+elif(dataset=='BRAIN'):
+    test_generator = mri_data_generator.DataSequence(adni_dir_val, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, debug=debug)
+elif(dataset=='BOLD'):
     test_generator = mri_data_generator.DataSequence(bold_dir_test, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch=patch, debug=debug)
 else:
     raise ValueError('Unrecognized dataset.')
+
+# Write random seeds to summary
+f=open(summary_file,'a+')
+f.write('Train random seed: '+str(train_seed)+'\n')
+f.write('Test random seed: '+str(test_seed))
+f.close()
 
 # Train model
 model.fit_generator(train_generator, epochs=num_epochs, steps_per_epoch=100, validation_data=test_generator, callbacks=[cp_callback,tb_callback])
