@@ -35,11 +35,11 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
                 num_pix = 0
                 angle = 0
             elif(corruption=='TRANS'):
-                num_pix = np.random.randint(0,10)
+                num_pix = np.random.random()*10
                 angle = 0
             elif(corruption=='ALL'):
-                num_pix = np.random.randint(0,10)
-                angle = np.random.randint(0,45)
+                num_pix = np.random.random()*10
+                angle = np.random.random()*90-45
             elif(corruption=='SEQUENTIAL'):
                 frame_jump = np.random.randint(0,30)
             else:
@@ -47,11 +47,11 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
         elif(corruption_extent=='ALL'):
             num_corrupt = sl_data.shape[0]
             if(corruption=='TRANS'):
-                num_pix = np.random.randint(0,10,size=num_corrupt)
+                num_pix = np.random.random(size=num_corrupt)*10
                 angle = np.zeros(shape=num_corrupt)
             elif(corruption=='ALL'):
-                num_pix = np.random.randint(0,10,size=num_corrupt)
-                angle = np.random.randint(0,45,size=num_corrupt)
+                num_pix = np.random.random(size=num_corrupt)*10
+                angle = np.random.random(size=num_corrupt)*90-45
             else:
                 raise ValueError('All-line motion corruption unsupported for this corruption type.')
 
