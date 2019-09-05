@@ -7,13 +7,12 @@ import nibabel as nib
 from PIL import Image
 
 import os
+import time
 
 import motion
 
 def get_mid_slice(vol_data,n,patch=False,coord=None):
-    _,_,z = vol_data.shape
-
-    sl_data = vol_data[:,:,int(z/2)]
+    sl_data = vol_data[:160,:160]
     if(patch):
         sl_data = sl_data[coord[0]:coord[0]+n,coord[1]:coord[1]+n]
     else:
@@ -26,10 +25,9 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
     inputs = []
     outputs = []
     for img in image_names:
-        vol_data = np.load(os.path.join(dir_name,img))['vol_data']
+        vol_data = np.load(os.path.join(dir_name,img),mmap_mode='r')['vol_data']
         coord = np.random.randint(vol_data.shape[0]-n,size=2)
         sl_data  = get_mid_slice(vol_data,n,patch,coord)
-        
         if(corruption_extent=='ONE'):
             if(corruption=='CLEAN'):
                 num_pix = 0
