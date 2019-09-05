@@ -20,10 +20,12 @@ import math
 parser = argparse.ArgumentParser(description='Train a model to reconstruct images from k-space data.')
 parser.add_argument('config',help ='Path to .ini config file.')
 parser.add_argument('--debug',help='Boolean indicating whether to run small-scale training experiment.',action='store_true')
+parser.add_argument('--suffix',help='Suffix appended to job name.')
 
 args = parser.parse_args()
 config_path = args.config
 debug = args.debug
+suffix = args.suffix
 
 config = configparser.ConfigParser()
 config.read(args.config)
@@ -75,6 +77,9 @@ if(debug):
     job_name = 'debug-job'
 else:
     job_name = dataset+'-'+corruption+'-'+corruption_extent+'-'+'PATCH'+str(patch)+'-'+architecture+'-'+nonlinearity+'-'+input_domain+'_INDOMAIN-'+output_domain+'_OUTDOMAIN-'+pretrain_string+'-'+str(num_epochs)+'epoch-'+str(n)
+
+if(suffix is not None):
+    job_name += '-*'+suffix
 
 # Set up job name
 if job_name is None:
