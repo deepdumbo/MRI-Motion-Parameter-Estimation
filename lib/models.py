@@ -115,14 +115,32 @@ def get_parameterized_model(n):
     return model
 
 def get_theta_model(n):
-    inputs = Input((n,n,2))
-    conv1 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal', name = 'FirstConv')(inputs)
-    conv2 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal', name = 'SecondConv')(conv1)
-    conv3 = Conv2D(64, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal', name = 'ThirdConv')(conv2)
+    def conv_block(num_filters,input_layer):
+        conv1 = Conv2D(num_filters, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(input_layer)
+        conv2 = Conv2D(num_filters, 3, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(conv1)
+        conv3 = Conv2D(num_filters, 5, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(conv2)
+        return conv3
 
-    conv_flat = Flatten()(conv3)
-    theta_flat = Dense(3*n, activation = tf.nn.relu)(conv_flat)
-    theta = Reshape((n,3))(theta_flat)
+    inputs = Input((n,n,2))
+    
+    block1 = conv_block(16,inputs)
+    pool1 = MaxPooling2D(pool_size=(2,2), strides=None, padding='valid')(block1)
+
+    block2 = conv_block(32,pool1)
+    pool2 = MaxPooling2D(pool_size=(2,2), strides=None, padding = 'valid')(block2)
+
+    block3 = conv_block(64,pool2)
+    pool3 = MaxPooling2D(pool_size=(2,2), strides=None, padding = 'valid')(block3)
+
+    block4 = conv_block(128,pool3)
+    block4_flat = Flatten()(block4)
+
+    fc_1 = Dense(128*4, activation = tf.nn.relu)(block4_flat)
+    fc_2 = Dense(128*2, activation = tf.nn.relu)(fc_1)
+    fc_3 = Dense(3*n, activation = tf.nn.relu)(fc_2)
+    fc_3_drop = Dropout(0.25)(fc_3)
+
+    theta = Reshape((n,3))(fc_3_drop)
 
     model = keras.models.Model(inputs = inputs, outputs = theta)
     return model
