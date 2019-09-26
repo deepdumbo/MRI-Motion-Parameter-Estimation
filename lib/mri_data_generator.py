@@ -21,29 +21,36 @@ def get_mid_slice(vol_data,n,patch=False,coord=None):
     sl_data = sl_data/np.max(sl_data)
     return sl_data
 
-def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,output_domain,patch):
+def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,output_domain,patch,num_lines=None):
     inputs = []
     outputs = []
     for img in image_names:
         vol_data = np.load(os.path.join(dir_name,img),mmap_mode='r')['vol_data']
         coord = np.random.randint(vol_data.shape[0]-n,size=2)
         sl_data  = get_mid_slice(vol_data,n,patch,coord)
-        if(corruption_extent=='ONE'):
+        k_line = np.random.randint(0,32)
+        if(corruption_extent=='CONTIGUOUS'):
+            n = sl_data.shape[0]
+            if(num_lines is not None):
+                k_line = n-num_lines
             if(corruption=='CLEAN'):
-                num_pix = 0
-                angle = 0
+                num_pix = np.zeros(n)
+                angle = np.zeros(n)
             elif(corruption=='TRANS'):
-                num_pix = np.random.random()*10
-                angle = 0
+                num_pix = np.zeros(n)
+                num_pix[k_line:] = np.random.random()*10
+                angle = np.zeros(n)
             elif(corruption=='ALL'):
-                num_pix = np.random.random()*10
-                angle = np.random.random()*90-45
+                num_pix = np.zeros(n)
+                num_pix[k_line:] = np.random.random()*10
+                angle = np.zeros(n)
+                angle[k_line:] = np.random.random()*90-45
             elif(corruption=='SEQUENTIAL'):
                 frame_jump = np.random.randint(0,30)
             else:
                 raise ValueError('Unrecognized motion corruption setting.')
         elif(corruption_extent=='ALL'):
-            num_corrupt = sl_data.shape[0]
+            num_corrupt = n
             if(corruption=='TRANS'):
                 num_pix = np.random.random(size=num_corrupt)*10
                 angle = np.zeros(shape=num_corrupt)
@@ -52,9 +59,6 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
                 angle = np.random.random(size=num_corrupt)*90-45
             else:
                 raise ValueError('All-line motion corruption unsupported for this corruption type.')
-
-
-        k_line = np.random.randint(0,32)
 
         if(corruption=='SEQUENTIAL'):
             if(sl_data.shape!=(n,n) or np.isnan(sl_data).any()):
@@ -73,7 +77,7 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
                 continue
             corrupted_img,corrupted_k = motion.add_next_frame(sl_data,next_img_sl,k_line,return_k=True)
         else:
-            corrupted_img,corrupted_k = motion.add_rotation_and_translation(sl_data,angle,num_pix,k_line,corruption_extent,return_k=True)
+            corrupted_img,corrupted_k = motion.add_rotation_and_translation(sl_data,angle,num_pix,return_k=True)
 
         corrupted_k = np.expand_dims(corrupted_k,-1)
         corrupted_k_re = np.real(corrupted_k)
@@ -88,7 +92,7 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
             true_k = np.concatenate([true_k_re,true_k_im], axis=2)
             outputs.append(true_k)
         elif(output_domain=='THETA'):
-            outputs.append(np.transpose(np.stack([num_pix,np.zeros(num_corrupt),angle])))
+            outputs.append(np.transpose(np.stack([num_pix,np.zeros(n),angle])))
         if(input_domain=='FREQUENCY'):
             inputs.append(corrupted_k)
         elif(input_domain=='IMAGE'):
@@ -99,7 +103,7 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
     return(inputs,outputs)
 
 class DataSequence(keras.utils.Sequence):
-    def __init__(self, data_path, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain,patch=False,debug=False):
+    def __init__(self, data_path, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, num_lines=None, patch=False, debug=False):
         self.dir_name = data_path
         self.output_domain = output_domain
         if(dataset == 'BOLD'):
@@ -114,7 +118,7 @@ class DataSequence(keras.utils.Sequence):
                 self.img_names = [os.listdir(data_path)[0]]
             else:
                 self.img_names = os.listdir(data_path)
-        self.batch_x, self.batch_y = batch_imgs(self.dir_name,self.img_names,n,corruption,corruption_extent,input_domain,output_domain,patch)
+        self.batch_x, self.batch_y = batch_imgs(self.dir_name,self.img_names,n,corruption,corruption_extent,input_domain,output_domain,patch,num_lines)
         self.batch_size = batch_size
         self.n = n
 

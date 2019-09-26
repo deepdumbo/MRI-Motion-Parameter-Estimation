@@ -37,6 +37,13 @@ if(config.has_option('DATA','corruption_extent')):
     corruption_extent = config.get('DATA', 'corruption_extent').upper()
 else:
     corruption_extent = 'ONE'
+if(corruption_extent == 'CONTIGUOUS'):
+    if(config.has_option('DATA','num_lines')):
+        num_lines = config.getint('DATA','num_lines')
+    else:
+        raise ValueError('Invalid corruption extent and num_lines.')
+else:
+    num_lines = None
 if(config.has_option('DATA','patch')):
     patch = config.getboolean('DATA','patch')
 
@@ -171,7 +178,7 @@ np.random.seed(train_seed)
 if(dataset=='IMAGENET'):
     train_generator = imagenet_data_generator.DataSequence(imagenet_dir_train, batch_size, n)
 elif(dataset=='BRAIN'):
-    train_generator = mri_data_generator.DataSequence(adni_dir_train, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, debug=debug)
+    train_generator = mri_data_generator.DataSequence(adni_dir_train, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, num_lines=num_lines, debug=debug)
 elif(dataset=='BOLD'):
     train_generator = mri_data_generator.DataSequence(bold_dir_train, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch=patch, debug=debug)
 else:
@@ -183,7 +190,7 @@ np.random.seed(test_seed)
 if(dataset=='IMAGENET'):
     test_generator = imagenet_data_generator.DataSequence(imagenet_dir_test, batch_size, n)
 elif(dataset=='BRAIN'):
-    test_generator = mri_data_generator.DataSequence(adni_dir_val, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, debug=debug)
+    test_generator = mri_data_generator.DataSequence(adni_dir_val, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, num_lines=num_lines, debug=debug)
 elif(dataset=='BOLD'):
     test_generator = mri_data_generator.DataSequence(bold_dir_test, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch=patch, debug=debug)
 else:
