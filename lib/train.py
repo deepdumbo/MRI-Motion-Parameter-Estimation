@@ -153,7 +153,10 @@ elif(architecture=='PARAMETERIZED'):
 elif(architecture=='PARAMETERIZED_THETA'):
     if(output_domain!='THETA'):
         raise ValueError('Architecture '+architecture+' and output domain '+output_domain+' are incompatible.')
-    model = models.get_theta_model(n)
+    if(input_domain=='IMAGE'):
+        model = models.get_theta_model((n,n,1), nonlinearity)
+    elif(input_domain=='FREQUENCY'):
+        model = models.get_theta_model((n,n,2), nonlinearity)
 else:
     raise ValueError('Unrecognized architecture.')
 
