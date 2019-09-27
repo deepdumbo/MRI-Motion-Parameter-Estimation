@@ -162,7 +162,7 @@ else:
 
 model.compile(optimizer=keras.optimizers.RMSprop(lr=0.00002,rho=0.9),
         loss='mean_squared_error',
-        metrics=[keras.metrics.mae])
+        metrics=[keras.metrics.mae,keras.metrics.mse])
 
 # Copy config and log model summary
 copyfile(args.config,os.path.join(checkpoint_dir,job_name+'_config.ini'))
