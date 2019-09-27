@@ -116,9 +116,9 @@ def get_parameterized_model(n):
 
 def get_theta_model(input_size,nonlinearity='relu',single=False):
     def conv_block(num_filters,input_layer):
-        conv1 = Conv2D(num_filters, 2, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(input_layer)
-        conv2 = Conv2D(num_filters, 3, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(conv1)
-        conv3 = Conv2D(num_filters, 5, activation = tf.nn.relu, padding = 'same', kernel_initializer = 'he_normal')(conv2)
+        conv1 = Conv2D(num_filters, 2, activation = nonlinearity, padding = 'same', kernel_initializer = 'he_normal')(input_layer)
+        conv2 = Conv2D(num_filters, 3, activation = nonlinearity, padding = 'same', kernel_initializer = 'he_normal')(conv1)
+        conv3 = Conv2D(num_filters, 5, activation = nonlinearity, padding = 'same', kernel_initializer = 'he_normal')(conv2)
         return conv3
 
     n = input_size[0]

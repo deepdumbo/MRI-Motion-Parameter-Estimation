@@ -60,7 +60,7 @@ if(config.has_option('MODEL','output_domain')):
 else:
     output_domain = 'IMAGE'
 
-if(architecture=='UNET' and config.has_option('MODEL','nonlinearity')):
+if(config.has_option('MODEL','nonlinearity')):
     nonlinearity = config.get('MODEL','nonlinearity')
 else:
     nonlinearity = 'relu'
