@@ -205,5 +205,9 @@ f.write('Train random seed: '+str(train_seed)+'\n')
 f.write('Test random seed: '+str(test_seed))
 f.close()
 
+# For debug mode, print the number of parameters
+if(debug):
+    print('Number of parameters: '+ str(model.count_params()))
+
 # Train model
 model.fit_generator(train_generator, epochs=num_epochs, steps_per_epoch=100, validation_data=test_generator, callbacks=[cp_callback,tb_callback])
