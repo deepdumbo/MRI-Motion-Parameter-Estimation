@@ -119,9 +119,10 @@ class DataSequence(keras.utils.Sequence):
                 self.img_names = [self.img_names[0]]
         else:
             if(debug):
-                self.img_names = [os.listdir(data_path)[0]]
-            else:
-                self.img_names = os.listdir(data_path)[:num_el]
+                num_el = 1
+            self.img_names = os.listdir(data_path)[:num_el]
+            # Iterate through data twice, to generate multiple sets of motion parameters for each image
+            self.img_names.extend(os.listdir(data_path)[:num_el])
         self.batch_x, self.batch_y = batch_imgs(self.dir_name,self.img_names,n,corruption,corruption_extent,input_domain,output_domain,patch,num_lines)
         self.batch_size = batch_size
         self.n = n
