@@ -33,6 +33,8 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
             n = sl_data.shape[0]
             if(num_lines is not None):
                 k_line = n-num_lines
+            else:
+                k_line = np.random.randint(0,32)
             if(corruption=='CLEAN'):
                 num_pix = np.zeros(n)
                 angle = np.zeros(n)

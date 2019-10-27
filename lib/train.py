@@ -41,7 +41,7 @@ if(corruption_extent == 'CONTIGUOUS'):
     if(config.has_option('DATA','num_lines')):
         num_lines = config.getint('DATA','num_lines')
     else:
-        raise ValueError('Invalid corruption extent and num_lines.')
+        num_lines = None
 else:
     num_lines = None
 if(config.has_option('DATA','patch')):
