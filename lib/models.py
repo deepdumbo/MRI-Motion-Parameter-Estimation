@@ -109,17 +109,25 @@ def get_parameterized_model(n):
         row_masks = keras.layers.Lambda(layers.get_rowmasks, name = 'RowMasks'+str(i),arguments={'n':n})((i,tf.shape(trans_layers[i])[0]))
         mask_rot_layer = keras.layers.Lambda(layers.batch_fourierrotate, name = 'MaskRot'+str(i))
         mask_rot_layers.append(mask_rot_layer((row_masks,theta_modules[i])))
-        
+    
     output = keras.layers.Lambda(layers.combine_rot_rows)((rot_layers,mask_rot_layers))
     model = keras.models.Model(inputs = inputs, outputs = output)
     return model
 
 def get_theta_model(input_size,nonlinearity='relu',single=False):
     def conv_block(num_filters,input_layer):
-        conv1 = Conv2D(num_filters, 2, activation = nonlinearity, padding = 'same', kernel_initializer = 'he_normal')(input_layer)
-        conv2 = Conv2D(num_filters, 3, activation = nonlinearity, padding = 'same', kernel_initializer = 'he_normal')(conv1)
-        conv3 = Conv2D(num_filters, 5, activation = nonlinearity, padding = 'same', kernel_initializer = 'he_normal')(conv2)
-        return conv3
+        input_conv = Conv2D(num_filters, 1, activation = nonlinearity, padding = 'same', kernel_initializer = 'he_normal')(input_layer)
+        
+        conv1 = Conv2D(num_filters, 2, activation = None, padding = 'same', kernel_initializer = 'he_normal')(input_layer)
+        conv1_bn = BatchNormalization()(conv1)
+        conv1_act = Activation(nonlinearity)(conv1_bn)
+        
+        conv2 = Conv2D(num_filters, 3, activation = None, padding = 'same', kernel_initializer = 'he_normal')(conv1_act)
+        conv2_bn = BatchNormalization()(conv2)
+        
+        add = Add()([conv2_bn,input_conv])
+        add_act = Activation(nonlinearity)(add)
+        return add_act
 
     n = input_size[0]
     inputs = Input(input_size)

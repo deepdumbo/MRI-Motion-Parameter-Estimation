@@ -157,6 +157,12 @@ elif(architecture=='PARAMETERIZED_THETA'):
         model = models.get_theta_model((n,n,1), nonlinearity)
     elif(input_domain=='FREQUENCY'):
         model = models.get_theta_model((n,n,2), nonlinearity)
+elif(architecture=='PARAMETERIZED_SINGLE_THETA'):
+    if(output_domain!='SINGLE_THETA'):
+        raise ValueError('Architecture '+architecture+' and output domain '+output_domain+' are incompatible.')
+    if(corruption_extent!='CONTIGUOUS'):
+        raise ValueError('Single parameter architecture cannot be used for non-contiguous motion.')
+    model = models.get_theta_model((n,n,2), nonlinearity, single=True)
 else:
     raise ValueError('Unrecognized architecture.')
 

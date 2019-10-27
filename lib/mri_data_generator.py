@@ -95,6 +95,8 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
             outputs.append(true_k)
         elif(output_domain=='THETA'):
             outputs.append(np.transpose(np.stack([num_pix,np.zeros(n),angle])))
+        elif(output_domain=='SINGLE_THETA'):
+            outputs.append(np.expand_dims(np.array([num_pix[-1],0,angle[-1]]),axis=0))
         if(input_domain=='FREQUENCY'):
             inputs.append(corrupted_k)
         elif(input_domain=='IMAGE'):
