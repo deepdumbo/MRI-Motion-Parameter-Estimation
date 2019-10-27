@@ -14,6 +14,7 @@ import os
 import atexit
 from shutil import rmtree
 from shutil import copyfile
+import pickle
 import datetime
 import math
 
@@ -204,6 +205,15 @@ elif(dataset=='BOLD'):
     test_generator = mri_data_generator.DataSequence(bold_dir_test, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch=patch, debug=debug)
 else:
     raise ValueError('Unrecognized dataset.')
+    
+# Save data generators
+train_outfile = os.path.join(checkpoint_dir,'train_generator.pkl')
+train_file = open(train_outfile, 'wb') 
+pickle.dump(train_generator, train_file)
+
+test_outfile = os.path.join(checkpoint_dir,'test_generator.pkl')
+test_file = open(test_outfile, 'wb') 
+pickle.dump(test_generator, test_file)
 
 # Write random seeds to summary
 f=open(summary_file,'a+')
