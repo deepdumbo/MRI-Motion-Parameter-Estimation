@@ -103,7 +103,7 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
     return(inputs,outputs)
 
 class DataSequence(keras.utils.Sequence):
-    def __init__(self, data_path, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, num_lines=None, patch=False, debug=False):
+    def __init__(self, data_path, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, num_lines=None, patch=False, debug=False, num_el=-1):
         self.dir_name = data_path
         self.output_domain = output_domain
         if(dataset == 'BOLD'):
@@ -117,7 +117,7 @@ class DataSequence(keras.utils.Sequence):
             if(debug):
                 self.img_names = [os.listdir(data_path)[0]]
             else:
-                self.img_names = os.listdir(data_path)
+                self.img_names = os.listdir(data_path)[:num_el]
         self.batch_x, self.batch_y = batch_imgs(self.dir_name,self.img_names,n,corruption,corruption_extent,input_domain,output_domain,patch,num_lines)
         self.batch_size = batch_size
         self.n = n
