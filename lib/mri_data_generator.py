@@ -40,7 +40,7 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
                 angle = np.zeros(n)
             elif(corruption=='TRANS'):
                 num_pix = np.zeros(n)
-                num_pix[k_line:] = np.random.random()*10
+                num_pix[k_line:] = np.random.random()*20-10
                 angle = np.zeros(n)
             elif(corruption=='ALL'):
                 num_pix = np.zeros(n)
