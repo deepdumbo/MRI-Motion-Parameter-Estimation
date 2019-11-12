@@ -170,6 +170,7 @@ else:
 model.compile(optimizer=keras.optimizers.RMSprop(lr=0.00002,rho=0.9),
         loss='mean_squared_error',
         metrics=[keras.metrics.mae,keras.metrics.mse])
+print('Got model')
 
 # Copy config and log model summary
 copyfile(args.config,os.path.join(checkpoint_dir,job_name+'_config.ini'))
@@ -182,6 +183,7 @@ if(pretrain):
     print('Loading pretrained weights')
     model.load_weights('../training/automap64/cp-0200.ckpt')
 
+print('Loading training data')
 # Load train data
 train_seed = np.random.randint(0,100)
 np.random.seed(train_seed)
@@ -194,6 +196,7 @@ elif(dataset=='BOLD'):
 else:
     raise ValueError('Unrecognized dataset.')
 
+print('Loading test data')
 # Load test data
 test_seed = 0
 np.random.seed(test_seed)
@@ -205,7 +208,8 @@ elif(dataset=='BOLD'):
     test_generator = mri_data_generator.DataSequence(bold_dir_test, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch=patch, debug=debug)
 else:
     raise ValueError('Unrecognized dataset.')
-    
+
+print('Saving data generators')
 # Save data generators
 train_outfile = os.path.join(checkpoint_dir,'train_generator.pkl')
 train_file = open(train_outfile, 'wb') 
