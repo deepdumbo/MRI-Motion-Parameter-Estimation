@@ -43,8 +43,11 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
                 num_pix[k_line:] = np.random.random()*20-10
                 angle = np.zeros(n)
             elif(corruption=='ALL'):
-                num_pix = np.zeros(n)
-                num_pix[k_line:] = np.random.random()*10
+                #num_pix = np.zeros(n)
+                #num_pix[k_line:] = np.random.random()*10
+                num_pix = np.zeros((n,2))
+                num_pix[k_line:,0] = np.random.random()*20-10
+                num_pix[k_line:,1] = np.random.random()*20-10
                 angle = np.zeros(n)
                 angle[k_line:] = np.random.random()*90-45
             elif(corruption=='SEQUENTIAL'):
@@ -57,8 +60,8 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
                 num_pix = np.random.random(size=num_corrupt)*10
                 angle = np.zeros(shape=num_corrupt)
             elif(corruption=='ALL'):
-                num_pix = np.random.random(size=num_corrupt)*10
-                angle = np.random.random(size=num_corrupt)*90-45
+                num_pix = np.random.random(size=(num_corrupt,2))*20-10
+                angle = np.random.random(size=(num_corrupt))*90-45
             else:
                 raise ValueError('All-line motion corruption unsupported for this corruption type.')
 
@@ -94,9 +97,9 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
             true_k = np.concatenate([true_k_re,true_k_im], axis=2)
             outputs.append(true_k)
         elif(output_domain=='THETA'):
-            outputs.append(np.transpose(np.stack([num_pix,np.zeros(n),angle])))
+            outputs.append(np.transpose(np.stack([num_pix[:,0],num_pix[:,1],angle])))
         elif(output_domain=='SINGLE_THETA'):
-            outputs.append(np.expand_dims(np.array([num_pix[-1],0,angle[-1]]),axis=0))
+            outputs.append(np.expand_dims(np.array([num_pix[-1,0],num_pix[-1,1],angle[-1]]),axis=0))
         if(input_domain=='FREQUENCY'):
             inputs.append(corrupted_k)
         elif(input_domain=='IMAGE'):

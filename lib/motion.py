@@ -71,7 +71,11 @@ def add_rotation_and_translation(sl,angle,num_pix,return_k=False):
     sl_k_combined = np.empty(sl.shape,dtype='complex64')
     for i in range(sl.shape[0]):
         sl_rotate = ndimage.rotate(sl,angle[i],reshape=False)
-        sl_moved = ndimage.interpolation.shift(sl_rotate,[0,num_pix[i]])
+        if(len(num_pix.shape)==1):
+            sl_moved = ndimage.interpolation.shift(sl_rotate,[0,num_pix[i]])
+        elif(num_pix.shape[1]==2):
+            sl_moved = ndimage.interpolation.shift(sl_rotate,[0,num_pix[i,0]])
+            sl_moved = ndimage.interpolation.shift(sl_moved,[0,num_pix[i,1]])
         sl_after = np.fft.fftshift(np.fft.fft2(sl_moved))
         sl_k_combined[i,:] = sl_after[i,:]
     sl_motion = np.fft.ifft2(np.fft.ifftshift(sl_k_combined))
