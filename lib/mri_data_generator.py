@@ -28,7 +28,7 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
         vol_data = np.load(os.path.join(dir_name,img),mmap_mode='r')['vol_data']
         coord = np.random.randint(vol_data.shape[0]-n,size=2)
         sl_data  = get_mid_slice(vol_data,n,patch,coord)
-        k_line = np.random.randint(0,32)
+        k_line = np.random.randint(0,n)
         if(corruption_extent=='CONTIGUOUS'):
             n = sl_data.shape[0]
             if(num_lines is not None):
