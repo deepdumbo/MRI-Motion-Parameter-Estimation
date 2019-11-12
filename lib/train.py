@@ -152,18 +152,37 @@ elif(architecture=='UNET'):
 elif(architecture=='PARAMETERIZED'):
     model = models.get_parameterized_model(n)
 elif(architecture=='PARAMETERIZED_THETA'):
-    if(output_domain!='THETA'):
+    if(output_domain!='THETA' and output_domain!='THETA_K'):
         raise ValueError('Architecture '+architecture+' and output domain '+output_domain+' are incompatible.')
+    if(output_domain=='THETA_K'):
+        if(input_domain=='IMAGE'):
+            model = models.get_theta_k_model((n,n,1), nonlinearity)
+        elif(input_domain=='FREQUENCY'):
+            model = models.get_theta_k_model((n,n,2), nonlinearity)
+    elif(output_domain=='THETA'):
+        if(input_domain=='IMAGE'):
+            model = models.get_theta_model((n,n,1), nonlinearity)
+        elif(input_domain=='FREQUENCY'):
+            model = models.get_theta_model((n,n,2), nonlinearity)
     if(input_domain=='IMAGE'):
         model = models.get_theta_model((n,n,1), nonlinearity)
     elif(input_domain=='FREQUENCY'):
         model = models.get_theta_model((n,n,2), nonlinearity)
 elif(architecture=='PARAMETERIZED_SINGLE_THETA'):
-    if(output_domain!='SINGLE_THETA'):
+    if(output_domain!='SINGLE_THETA' and output_domain!='SINGLE_THETA_K'):
         raise ValueError('Architecture '+architecture+' and output domain '+output_domain+' are incompatible.')
     if(corruption_extent!='CONTIGUOUS'):
         raise ValueError('Single parameter architecture cannot be used for non-contiguous motion.')
-    model = models.get_theta_model((n,n,2), nonlinearity, single=True)
+    if(output_domain=='SINGLE_THETA_K'):
+        if(input_domain=='IMAGE'):
+            model = models.get_theta_k_model((n,n,1), nonlinearity, single=True)
+        elif(input_domain=='FREQUENCY'):
+            model = models.get_theta_k_model((n,n,2), nonlinearity, single=True)
+    elif(output_domain=='SINGLE_THETA'):
+        if(input_domain=='IMAGE'):
+            model = models.get_theta_model((n,n,1), nonlinearity, single=True)
+        elif(input_domain=='FREQUENCY'):
+            model = models.get_theta_model((n,n,2), nonlinearity, single=True)
 else:
     raise ValueError('Unrecognized architecture.')
 

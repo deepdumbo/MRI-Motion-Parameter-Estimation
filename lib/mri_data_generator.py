@@ -29,12 +29,14 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
         coord = np.random.randint(vol_data.shape[0]-n,size=2)
         sl_data  = get_mid_slice(vol_data,n,patch,coord)
         k_line = np.random.randint(0,n)
+        k_vect = np.zeros(n)
         if(corruption_extent=='CONTIGUOUS'):
             n = sl_data.shape[0]
             if(num_lines is not None):
                 k_line = n-num_lines
             else:
-                k_line = np.random.randint(0,32)
+                k_line = np.random.randint(0,n)
+                k_vect[k_line] = 1
             if(corruption=='CLEAN'):
                 num_pix = np.zeros(n)
                 angle = np.zeros(n)
@@ -98,8 +100,12 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
             outputs.append(true_k)
         elif(output_domain=='THETA'):
             outputs.append(np.transpose(np.stack([num_pix[:,0],num_pix[:,1],angle])))
+        elif(output_domain=='THETA_K'):
+            outputs.append(np.transpose(np.stack([num_pix[:,0],num_pix[:,1],angle,k_vect])))
         elif(output_domain=='SINGLE_THETA'):
             outputs.append(np.expand_dims(np.array([num_pix[-1,0],num_pix[-1,1],angle[-1]]),axis=0))
+        elif(output_domain=='SINGLE_THETA_K'):
+            outputs.append(np.expand_dims(np.array([num_pix[-1,0],num_pix[-1,1],angle[-1],np.array(k_line)]),axis=0))
         if(input_domain=='FREQUENCY'):
             inputs.append(corrupted_k)
         elif(input_domain=='IMAGE'):
@@ -134,7 +140,7 @@ class DataSequence(keras.utils.Sequence):
         return int(np.ceil(len(self.batch_x)/float(self.batch_size)))
 
     def __getitem__(self, idx):
-        if(self.output_domain=='THETA'):
+        if(self.output_domain in ['THETA','THETA_K','SINGLE_THETA','SINGLE_THETA_K']):
             batch_y = self.batch_y[idx*self.batch_size:(idx+1)*self.batch_size,:,:]
             batch_x = self.batch_x[idx*self.batch_size:(idx+1)*self.batch_size,:,:]            
         else:

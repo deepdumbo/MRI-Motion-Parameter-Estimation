@@ -146,10 +146,63 @@ def get_theta_model(input_size,nonlinearity='relu',single=False):
 
     fc_1 = Dense(128*4, activation = tf.nn.relu)(block4_flat)
     fc_2 = Dense(128*2, activation = tf.nn.relu)(fc_1)
-    fc_3 = Dense(3*n, activation = tf.nn.relu)(fc_2)
-    fc_3_drop = Dropout(0.25)(fc_3)
+    if(single):
+        fc_3 = Dense(3, activation = None)(fc_2)
+    else:
+        fc_3 = Dense(3*n, activation = None)(fc_2)
+    fc_3_drop = Dropout(0)(fc_3)
 
-    theta = Reshape((n,3))(fc_3_drop)
+    if(single):
+        theta = Reshape((1,3))(fc_3_drop)
+    else:
+        theta = Reshape((n,3))(fc_3_drop)
 
     model = keras.models.Model(inputs = inputs, outputs = theta)
     return model
+
+def get_theta_k_model(input_size,nonlinearity='relu',single=False):
+    def conv_block(num_filters,input_layer):
+        input_conv = Conv2D(num_filters, 1, activation = nonlinearity, padding = 'same', kernel_initializer = 'he_normal')(input_layer)
+
+        conv1 = Conv2D(num_filters, 2, activation = None, padding = 'same', kernel_initializer = 'he_normal')(input_layer)
+        conv1_bn = BatchNormalization()(conv1)
+        conv1_act = Activation(nonlinearity)(conv1_bn)
+
+        conv2 = Conv2D(num_filters, 3, activation = None, padding = 'same', kernel_initializer = 'he_normal')(conv1_act)
+        conv2_bn = BatchNormalization()(conv2)
+
+        add = Add()([conv2_bn,input_conv])
+        add_act = Activation(nonlinearity)(add)
+        return add_act
+
+    n = input_size[0]
+    inputs = Input(input_size)
+
+    block1 = conv_block(16,inputs)
+    pool1 = MaxPooling2D(pool_size=(2,2), strides=None, padding='valid')(block1)
+
+    block2 = conv_block(32,pool1)
+    pool2 = MaxPooling2D(pool_size=(2,2), strides=None, padding ='valid')(block2)
+
+    block3 = conv_block(64,pool2)
+    pool3 = MaxPooling2D(pool_size=(2,2), strides=None, padding ='valid')(block3)
+
+    block4 = conv_block(128,pool3)
+    block4_flat = Flatten()(block4)
+
+    fc_1 = Dense(128*4, activation = tf.nn.relu)(block4_flat)
+    fc_2 = Dense(128*2, activation = tf.nn.relu)(fc_1)
+    if(single):
+        fc_3 = Dense(4, activation = None)(fc_2)
+    else:
+        fc_3 = Dense(4*n, activation = None)(fc_2)
+    fc_3_drop = Dropout(0)(fc_3)
+
+    if(single):
+        theta = Reshape((1,4))(fc_3_drop)
+    else:
+        theta = Reshape((n,4))(fc_3_drop)
+
+    model = keras.models.Model(inputs = inputs, outputs = theta)
+    return model
+
