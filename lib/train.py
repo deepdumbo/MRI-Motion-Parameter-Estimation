@@ -3,6 +3,7 @@ from tensorflow import keras
 import models
 import imagenet_data_generator
 import mri_data_generator
+import visualization
 
 import random
 import numpy as np
@@ -250,3 +251,12 @@ if(debug):
 
 # Train model
 model.fit_generator(train_generator, epochs=num_epochs, steps_per_epoch=100, validation_data=test_generator, callbacks=[cp_callback,tb_callback])
+
+# Visualize outputs
+if(not debug and (output_domain=='THETA' or output_domain=='SINGLE_THETA')):
+    train_outs,val_outs = visualization.get_outputs(train_generator,test_generator)
+    train_model_outs,val_model_outs = visualization.get_model_outputs(model,train_generator,test_generator)
+    kde_filename = os.path.join(checkpoint_dir,'kde.png')
+    visualization.generate_error_kde(train_outs,train_model_outs,val_outs,val_model_outs,kde_filename)
+    scatter_filename = os.path.join(checkpoint_dir,'scatter.png')
+    visualization.generate_error_scatter(train_outs,train_model_outs,val_outs,val_model_outs,scatter_filename)
