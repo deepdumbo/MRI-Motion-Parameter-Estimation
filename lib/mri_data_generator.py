@@ -12,7 +12,7 @@ import time
 import motion
 
 def get_mid_slice(vol_data,n,patch=False,coord=None):
-    sl_data = vol_data[:160,:160]
+    sl_data = vol_data
     if(patch):
         sl_data = sl_data[coord[0]:coord[0]+n,coord[1]:coord[1]+n]
     else:

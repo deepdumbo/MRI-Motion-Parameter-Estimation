@@ -103,9 +103,9 @@ imagenet_dir = '/data/vision/polina/scratch/nmsingh/imagenet-data-preprocessed-'
 imagenet_dir_train = imagenet_dir+'train'
 imagenet_dir_test = imagenet_dir+'test'
 
-adni_dir = '/data/ddmg/voxelmorph/data/t1_mix/proc/resize256-crop_x32-adni-split-by-subj-slice100/'
-adni_dir_train = adni_dir+'train/vols'
-adni_dir_val = adni_dir+'validate/vols'
+adni_dir = '/data/vision/polina/scratch/nmsingh/ADNI-data/uncropped/adni-split-by-subj-slice128-axial/'
+adni_dir_train = adni_dir+'train/origs'
+adni_dir_val = adni_dir+'test/origs'
 
 bold_dir = '/data/vision/polina/scratch/nmsingh/bold-data/'
 bold_dir_train = bold_dir+'train'
