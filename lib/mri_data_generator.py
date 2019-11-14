@@ -27,7 +27,10 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
     outputs = []
     for img in image_names:
         vol_data = np.load(os.path.join(dir_name,img),mmap_mode='r')['vol_data']
-        coord = np.random.randint(vol_data.shape[0]-n,size=2)
+        if(patch):
+            coord = np.random.randint(vol_data.shape[0]-n,size=2)
+        else:
+            None
         sl_data  = get_mid_slice(vol_data,n,patch,coord)
         k_line = np.random.randint(0,n)
         k_vect = np.zeros(n)
