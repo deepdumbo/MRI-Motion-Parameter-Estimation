@@ -8,6 +8,7 @@ from PIL import Image
 
 import os
 import time
+import random
 
 import motion
 
@@ -21,7 +22,7 @@ def get_mid_slice(vol_data,n,patch=False,coord=None):
     sl_data = sl_data/np.max(sl_data)
     return sl_data
 
-def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,output_domain,patch,num_lines=None):
+def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,output_domain,patch,num_lines=None,num_move_lines=None):
     inputs = []
     outputs = []
     for img in image_names:
@@ -56,6 +57,20 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
                 frame_jump = np.random.randint(0,30)
             else:
                 raise ValueError('Unrecognized motion corruption setting.')
+        elif(corruption_extent=='PARTIAL'):
+            move_inds = random.sample(range(1,n),num_move_lines)
+            move_inds.sort()
+            move_ends = move_inds.copy()
+            move_ends.extend([None])
+            k_vect = np.zeros(n)
+            num_pix = np.zeros((n,2))
+            angle = np.zeros(n)
+
+            for i in range(len(move_inds)):
+                k_vect[move_inds[i]] = 1
+                num_pix[move_ends[i]:move_ends[i+1],0] = np.random.random()*20-10
+                num_pix[move_ends[i]:move_ends[i+1],1] = np.random.random()*20-10
+                angle[move_ends[i]:move_ends[i+1]] = np.random.random()*90-45                          
         elif(corruption_extent=='ALL'):
             num_corrupt = n
             if(corruption=='TRANS'):
@@ -116,7 +131,7 @@ def batch_imgs(dir_name,image_names,n,corruption,corruption_extent,input_domain,
     return(inputs,outputs)
 
 class DataSequence(keras.utils.Sequence):
-    def __init__(self, data_path, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, num_lines=None, patch=False, debug=False, num_el=-1):
+    def __init__(self, data_path, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, num_lines=None, num_move_lines=None, patch=False, debug=False, num_el=-1):
         self.dir_name = data_path
         self.output_domain = output_domain
         if(dataset == 'BOLD'):
@@ -130,9 +145,7 @@ class DataSequence(keras.utils.Sequence):
             if(debug):
                 num_el = 1
             self.img_names = os.listdir(data_path)[:num_el]
-            # Iterate through data twice, to generate multiple sets of motion parameters for each image
-            self.img_names.extend(os.listdir(data_path)[:num_el])
-        self.batch_x, self.batch_y = batch_imgs(self.dir_name,self.img_names,n,corruption,corruption_extent,input_domain,output_domain,patch,num_lines)
+        self.batch_x, self.batch_y = batch_imgs(self.dir_name,self.img_names,n,corruption,corruption_extent,input_domain,output_domain,patch,num_lines,num_move_lines)
         self.batch_size = batch_size
         self.n = n
 

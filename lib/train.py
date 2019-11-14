@@ -48,6 +48,13 @@ if(corruption_extent == 'CONTIGUOUS'):
         num_lines = None
 else:
     num_lines = None
+if(corruption_extent == 'PARTIAL'):
+    if(config.has_option('DATA','num_move_lines')):
+        num_move_lines = config.getint('DATA','num_move_lines')
+    else:
+        num_move_lines = None
+else:
+    num_move_lines = None
 if(config.has_option('DATA','patch')):
     patch = config.getboolean('DATA','patch')
 
@@ -215,7 +222,7 @@ np.random.seed(train_seed)
 if(dataset=='IMAGENET'):
     train_generator = imagenet_data_generator.DataSequence(imagenet_dir_train, batch_size, n)
 elif(dataset=='BRAIN'):
-    train_generator = mri_data_generator.DataSequence(adni_dir_train, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, num_lines=num_lines, debug=debug)
+    train_generator = mri_data_generator.DataSequence(adni_dir_train, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, num_lines=num_lines, num_move_lines=num_move_lines, debug=debug)
 elif(dataset=='BOLD'):
     train_generator = mri_data_generator.DataSequence(bold_dir_train, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch=patch, debug=debug)
 else:
@@ -228,7 +235,7 @@ np.random.seed(test_seed)
 if(dataset=='IMAGENET'):
     test_generator = imagenet_data_generator.DataSequence(imagenet_dir_test, batch_size, n)
 elif(dataset=='BRAIN'):
-    test_generator = mri_data_generator.DataSequence(adni_dir_val, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, num_lines=num_lines, debug=debug)
+    test_generator = mri_data_generator.DataSequence(adni_dir_val, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, num_lines=num_lines, num_move_lines=num_move_lines, debug=debug)
 elif(dataset=='BOLD'):
     test_generator = mri_data_generator.DataSequence(bold_dir_test, batch_size, n, dataset, corruption, corruption_extent, input_domain, output_domain, patch=patch, debug=debug)
 else:
