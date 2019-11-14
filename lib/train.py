@@ -22,11 +22,13 @@ import math
 parser = argparse.ArgumentParser(description='Train a model to reconstruct images from k-space data.')
 parser.add_argument('config',help ='Path to .ini config file.')
 parser.add_argument('--debug',help='Boolean indicating whether to run small-scale training experiment.',action='store_true')
+parser.add_argument('--training_dir',help='Name of folder in which to store training logs')
 parser.add_argument('--suffix',help='Suffix appended to job name.')
 
 args = parser.parse_args()
 config_path = args.config
 debug = args.debug
+training_dir = args.training_dir
 suffix = args.suffix
 
 config = configparser.ConfigParser()
@@ -110,7 +112,10 @@ bold_dir_train = bold_dir+'train'
 bold_dir_test = bold_dir+'test'
 
 # Checkpointing
-checkpoint_dir = os.path.join(dir_path,'../training/',job_name)
+if((training_dir is None) or debug):
+    checkpoint_dir = os.path.join(dir_path,'../training/',job_name)
+else:
+    checkpoint_dir = os.path.join(dir_path,'../training/',training_dir,job_name)
 checkpoint_name = 'cp-{epoch:04d}.ckpt'
 checkpoint_path = os.path.join(checkpoint_dir,checkpoint_name)
 if os.path.exists(checkpoint_dir):
