@@ -1,2 +1,0 @@
-bold-FREQUENCY.ini
-bold-IMAGE.ini

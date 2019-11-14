@@ -1,9 +1,0 @@
-brain64all.ini
-brain64convall.ini
-brain64conv.ini
-brain64convtrans.ini
-brain64.ini
-brain64slim.ini
-brain64trans.ini
-imagenet64conv.ini
-imagenet64.ini
